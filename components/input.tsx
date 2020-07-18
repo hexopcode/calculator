@@ -21,6 +21,7 @@ export class Input extends React.Component<InputProps> {
         return (
             <input type="text"
                    id="input"
+                   autoComplete="off"
                    ref={this.inputRef}
                    onKeyDown={(e) => this.keyDown(e)}
                    onKeyPress={(e) => this.keyPressed(e)} />
