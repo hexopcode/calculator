@@ -1,5 +1,5 @@
 import {AstPrinter} from './astprinter';
-import {Callable, CallableArity} from './callable';
+import {Callable} from './callable';
 import {Environment} from './environment';
 import {Expr, BinaryExpr, CallExpr, GroupingExpr, LiteralExpr, UnaryExpr, VariableExpr, ExprVisitor} from './parser/expr';
 import {MATHLIB_CALLABLES, MATHLIB_STATEMENTS} from './mathlib';
@@ -46,7 +46,9 @@ export class Interpreter implements ExprVisitor<any>, StmtVisitor<any> {
         try {
             for (const statement of statements) {
                 const ret = this.execute(statement);
-                if (ret !== null) {
+                if (ret instanceof Callable) {
+                    results.push('<native>');
+                } else if (ret !== null) {
                     results.push(ret);
                 }
             }
