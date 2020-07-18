@@ -1,0 +1,55 @@
+import {Expr, BinaryExpr, CallExpr, GroupingExpr, LiteralExpr, UnaryExpr, VariableExpr, ExprVisitor} from './parser/expr';
+import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, StmtVisitor} from './parser/stmt';
+
+export class AstPrinter implements ExprVisitor<string>, StmtVisitor<string> {
+    print(stmt: Stmt): string {
+        return stmt.accept(this);
+    }
+
+    visitExpressionStmt(stmt: ExpressionStmt): string {
+        return this.parenthesize('expr', stmt.expression);
+    }
+
+    visitAssignmentStmt(stmt: AssignmentStmt): string {
+        return this.parenthesize(`= ${stmt.name.lexeme}`, stmt.expression);
+    }
+
+    visitConstStmt(stmt: ConstStmt): string {
+        return this.parenthesize(`const ${stmt.name.lexeme}`, stmt.expression);
+    }
+
+    visitBinaryExpr(expr: BinaryExpr): string {
+        return this.parenthesize(expr.operator.lexeme, expr.left, expr.right);
+    }
+
+    visitCallExpr(expr: CallExpr): string {
+        return this.parenthesize(`call ${expr.name.lexeme}`, ...expr.args);
+    }
+
+    visitGroupingExpr(expr: GroupingExpr): string {
+        return this.parenthesize('group', expr.expression);
+    }
+
+    visitLiteralExpr(expr: LiteralExpr): string {
+        if (expr.value == null) {
+            return 'nil';
+        }
+        return expr.value.toString();
+    }
+
+    visitUnaryExpr(expr: UnaryExpr): string {
+        return this.parenthesize(expr.operator.lexeme, expr.right);
+    }
+
+    visitVariableExpr(expr: VariableExpr): string {
+        return expr.name.lexeme;
+    }
+
+    private parenthesize(name: string, ...expressions: Expr[]): string {
+        let str = `(${name}`;
+        for (const expr of expressions) {
+            str += ` ${expr.accept(this)}`;
+        }
+        return str + ')';
+    }
+}

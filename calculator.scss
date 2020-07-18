@@ -1,0 +1,36 @@
+$calc-font: 11pt monospace;
+$calc-color-bg: #6bafdb;
+$calc-color-fg: #333;
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+#calc {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    > * {
+        padding: 10px;
+
+        font: $calc-font;
+
+        background-color: $calc-color-bg;
+        color: $calc-color-fg;
+
+        text-transform: uppercase;
+    }
+}
+
+#screen {
+    flex: 1;
+}
+
+#input {
+    border: none;
+}
