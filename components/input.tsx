@@ -37,7 +37,9 @@ export class Input extends React.Component<InputProps> {
             case 38:
                 this.historyCursor = Math.max(--this.historyCursor, 0);
                 if (this.historyCursor < this.history.length) {
-                    this.inputRef.current.value = this.history[this.historyCursor];
+                    const value = this.history[this.historyCursor];
+                    this.inputRef.current.value = value;
+                    this.inputRef.current.setSelectionRange(value.length, value.length);
                 }
                 break;
             case 40:
@@ -45,7 +47,9 @@ export class Input extends React.Component<InputProps> {
                 if (this.historyCursor == this.history.length) {
                     this.inputRef.current.value = '';
                 } else {
-                    this.inputRef.current.value = this.history[this.historyCursor];
+                    const value = this.history[this.historyCursor];
+                    this.inputRef.current.value = value;
+                    this.inputRef.current.setSelectionRange(value.length, value.length);
                 }
                 break;
             default:
