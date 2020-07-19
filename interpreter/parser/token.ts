@@ -3,6 +3,7 @@ export enum TokenType {
     COLON,
     SEMI_COLON,
     COMMA,
+    QUESTION,
     LEFT_PAREN,
     RIGHT_PAREN,
     LEFT_SQUARE_BRACKET,
