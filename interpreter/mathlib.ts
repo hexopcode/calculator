@@ -20,7 +20,7 @@ CONST E = ${Math.E}
 CONST SQRT(X) = X ^ (1 / 2)
 `;
 
-export const MATHLIB_STATEMENTS = MATHLIB.trim().replace(/\n+/g, ':');
+export const MATHLIB_STATEMENTS = MATHLIB.trim().replace(/\n+/g, ';');
 
 export const MATHLIB_BUILTINS = new Map([
     ["SIN", __builtin__(Math.sin)],

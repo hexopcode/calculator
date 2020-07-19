@@ -52,7 +52,7 @@ export class Parser {
         const expr = this.expression();
 
         if (!this.isAtEnd()) {
-            this.consume(TokenType.COLON, 'Expect ":" after constant declaration');
+            this.consume(TokenType.SEMI_COLON, 'Expect ";" after constant declaration');
         }
 
         return new ConstStmt(name, expr);
@@ -71,7 +71,7 @@ export class Parser {
         const expr = this.expression();
 
         if (!this.isAtEnd()) {
-            this.consume(TokenType.COLON, 'Expect ":" after assignment declaration');
+            this.consume(TokenType.SEMI_COLON, 'Expect ";" after assignment declaration');
         }
 
         return new AssignmentStmt(name, expr);
@@ -84,7 +84,7 @@ export class Parser {
     private expressionStatement(): Stmt {
         const expr = this.expression();
         if (!this.isAtEnd()) {
-            this.consume(TokenType.COLON, 'Expect ":" after expression');
+            this.consume(TokenType.SEMI_COLON, 'Expect ";" after expression');
         }
         return new ExpressionStmt(expr);
     }
