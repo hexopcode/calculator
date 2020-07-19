@@ -1,6 +1,7 @@
 export enum TokenType {
     // single char
     COLON,
+    SEMI_COLON,
     COMMA,
     LEFT_PAREN,
     RIGHT_PAREN,

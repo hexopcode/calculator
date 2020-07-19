@@ -42,6 +42,9 @@ export class Scanner {
             case ':':
                 this.addToken(TokenType.COLON);
                 break;
+            case ';':
+                this.addToken(TokenType.SEMI_COLON);
+                break;
             case ',':
                 this.addToken(TokenType.COMMA);
                 break;
