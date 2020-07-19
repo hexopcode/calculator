@@ -20,7 +20,7 @@ CONST E = ${Math.E}
 
 export const MATHLIB_STATEMENTS = MATHLIB.trim().replace('\n', ':');
 
-export const MATHLIB_CALLABLES = new Map([
+export const MATHLIB_BUILTINS = new Map([
     ["SIN", __builtin__(Math.sin)],
     ["COS", __builtin__(Math.cos)],
     ["TAN", __builtin__(Math.tan)],
