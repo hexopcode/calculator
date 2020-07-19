@@ -10,6 +10,10 @@ function __builtin__(fn: Function, minArgs: number = 1, maxArgs?: number): Calla
         arity(): CallableArity {
             return [minArgs, maxArgs === undefined ? minArgs : maxArgs];
         }
+
+        toString(): string {
+            return '<native>';
+        }
     }
 }
 
