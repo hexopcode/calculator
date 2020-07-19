@@ -1,5 +1,3 @@
-import { Map } from "core-js"
-
 export class Environment {
     private parent: Environment;
     private constants: Map<string, any> = new Map();
