@@ -3,7 +3,7 @@ import {Callable, FunctionCallable} from './callable';
 import {Environment} from './environment';
 import {Executor} from './executor';
 import {Expr, BinaryExpr, CallExpr, FunctionExpr, GroupingExpr, LiteralExpr, UnaryExpr, VariableExpr, ExprVisitor} from './parser/expr';
-import {MATHLIB_CALLABLES, MATHLIB_STATEMENTS} from './mathlib';
+import {MATHLIB_BUILTINS, MATHLIB_STATEMENTS} from './mathlib';
 import {Parser} from './parser/parser';
 import {Scanner} from './parser/scanner';
 import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, StmtVisitor} from './parser/stmt';
@@ -18,7 +18,7 @@ export class Interpreter implements ExprVisitor<any>, StmtVisitor<any>, Executor
     }
 
     createEnvironment() {
-        MATHLIB_CALLABLES.forEach((callable, name) => this.environment().defineConstant(name, callable));
+        MATHLIB_BUILTINS.forEach((callable, name) => this.environment().defineConstant(name, callable));
         this.run(MATHLIB_STATEMENTS);
     }
 
