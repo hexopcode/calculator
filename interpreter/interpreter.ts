@@ -1,8 +1,9 @@
 import {AstPrinter} from './astprinter';
-import {Callable, FunctionCallable} from './callable';
+import {Callable} from './callables/callable';
 import {Environment} from './environment';
 import {Executor} from './executor';
 import {Expr, BinaryExpr, CallExpr, FunctionExpr, GroupingExpr, LiteralExpr, UnaryExpr, VariableExpr, ExprVisitor} from './parser/expr';
+import {FunctionCallable} from './callables/function';
 import {MATHLIB_BUILTINS, MATHLIB_STATEMENTS} from './mathlib';
 import {Parser} from './parser/parser';
 import {Scanner} from './parser/scanner';
