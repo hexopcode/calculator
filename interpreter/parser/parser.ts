@@ -1,5 +1,5 @@
 import {ParserErrorReporter} from '../common/errorreporter';
-import {Expr, BinaryExpr, GroupingExpr, LiteralExpr, VariableExpr, UnaryExpr, CallExpr} from './expr';
+import {Expr, BinaryExpr, FunctionExpr, GroupingExpr, LiteralExpr, VariableExpr, UnaryExpr, CallExpr} from './expr';
 import {Token, TokenType} from './token';
 import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt} from './stmt';
 
@@ -28,6 +28,9 @@ export class Parser {
             if (this.match(TokenType.CONST)) {
                 return this.constantDeclaration();
             }
+            if (this.check(TokenType.IDENTIFIER) && this.check(TokenType.LEFT_PAREN, 1) && this.find(TokenType.EQUAL)) {
+                return this.functionDeclaration();
+            }
             if (this.check(TokenType.IDENTIFIER) && this.check(TokenType.EQUAL, 1)) {
                 return this.assignmentDeclaration();
             }
@@ -39,6 +42,12 @@ export class Parser {
 
     private constantDeclaration(): Stmt {
         const name = this.consume(TokenType.IDENTIFIER, 'Expect constant name');
+
+        if (this.match(TokenType.LEFT_PAREN)) {
+            const fn = this.functionExpr();
+            return new ConstStmt(name, fn);
+        }
+
         this.consume(TokenType.EQUAL, 'Expect "=" after identifier');
         const expr = this.expression();
 
@@ -47,6 +56,13 @@ export class Parser {
         }
 
         return new ConstStmt(name, expr);
+    }
+
+    private functionDeclaration(): Stmt {
+        const name = this.consume(TokenType.IDENTIFIER, 'Expect function name');
+        this.consume(TokenType.LEFT_PAREN, 'Expect "(" after function name');
+        const fn = this.functionExpr();
+        return new AssignmentStmt(name, fn);
     }
 
     private assignmentDeclaration(): Stmt {
@@ -71,6 +87,22 @@ export class Parser {
             this.consume(TokenType.COLON, 'Expect ":" after expression');
         }
         return new ExpressionStmt(expr);
+    }
+
+    private functionExpr(): Expr {
+        const args: Token[] = [];
+
+        while (this.peek().type == TokenType.IDENTIFIER) {
+            args.push(this.advance());
+            if (this.peek().type != TokenType.RIGHT_PAREN) {
+                this.consume(TokenType.COMMA, 'Expect "," after identifier');
+                this.peekAssert(TokenType.IDENTIFIER, 'Expect idenfier after ","');
+            }
+        }
+        this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after function arguments');
+        this.consume(TokenType.EQUAL, 'Expect "=" after function signature');
+
+        return new FunctionExpr(args, this.expression());
     }
 
     private expression(): Expr {
@@ -196,6 +228,15 @@ export class Parser {
         return false;
     }
 
+    private find(type: TokenType, lookAhead: number = 0): boolean {
+        for (let pos = this.current + lookAhead; pos < this.tokens.length; ++pos) {
+            if (this.tokens[pos].type == type) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private check(type: TokenType, lookAhead: number = 0): boolean {
         if (this.isAtEnd()) {
             return false;
@@ -224,6 +265,13 @@ export class Parser {
 
     previous(): Token {
         return this.tokens[this.current - 1];
+    }
+
+    peekAssert(type: TokenType, errorMessage: string): Token {
+        if (this.peek().type != type) {
+            throw this.error(this.peek(), errorMessage);
+        }
+        return this.peek();
     }
 
     consume(type: TokenType, errorMessage: string): Token {
