@@ -34,6 +34,20 @@ export class CallExpr implements Expr {
     }
 }
 
+export class FunctionExpr implements Expr {
+    readonly args: Token[];
+    readonly body: Expr;
+
+    constructor(args: Token[], body: Expr) {
+        this.args = args;
+        this.body = body;
+    }
+
+    accept<T>(visitor: ExprVisitor<T>): T {
+        return visitor.visitFunctionExpr(this);
+    }
+}
+
 export class GroupingExpr implements Expr {
     readonly expression: Expr;
 
@@ -87,6 +101,7 @@ export class VariableExpr implements Expr {
 export interface ExprVisitor<T> {
     visitBinaryExpr(expr: BinaryExpr): T;
     visitCallExpr(expr: CallExpr): T;
+    visitFunctionExpr(expr: FunctionExpr): T;
     visitGroupingExpr(expr: GroupingExpr): T;
     visitLiteralExpr(expr: LiteralExpr): T;
     visitUnaryExpr(expr: UnaryExpr): T;

@@ -1,15 +1,16 @@
 import {AstPrinter} from './astprinter';
-import {Callable} from './callable';
+import {Callable, FunctionCallable} from './callable';
 import {Environment} from './environment';
-import {Expr, BinaryExpr, CallExpr, GroupingExpr, LiteralExpr, UnaryExpr, VariableExpr, ExprVisitor} from './parser/expr';
+import {Executor} from './executor';
+import {Expr, BinaryExpr, CallExpr, FunctionExpr, GroupingExpr, LiteralExpr, UnaryExpr, VariableExpr, ExprVisitor} from './parser/expr';
 import {MATHLIB_CALLABLES, MATHLIB_STATEMENTS} from './mathlib';
 import {Parser} from './parser/parser';
 import {Scanner} from './parser/scanner';
 import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, StmtVisitor} from './parser/stmt';
 import {Token, TokenType} from './parser/token';
 
-export class Interpreter implements ExprVisitor<any>, StmtVisitor<any> {
-    private environment: Environment = new Environment();
+export class Interpreter implements ExprVisitor<any>, StmtVisitor<any>, Executor {
+    private environments: Environment[] = [new Environment()];
     private errors: string[] = [];
 
     constructor() {
@@ -17,8 +18,12 @@ export class Interpreter implements ExprVisitor<any>, StmtVisitor<any> {
     }
 
     createEnvironment() {
-        MATHLIB_CALLABLES.forEach((callable, name) => this.environment.defineConstant(name, callable));
+        MATHLIB_CALLABLES.forEach((callable, name) => this.environment().defineConstant(name, callable));
         this.run(MATHLIB_STATEMENTS);
+    }
+
+    environment(): Environment {
+        return this.environments[this.environments.length - 1];
     }
 
     run(source: string): string[] {
@@ -47,7 +52,7 @@ export class Interpreter implements ExprVisitor<any>, StmtVisitor<any> {
             for (const statement of statements) {
                 const ret = this.execute(statement);
                 if (ret instanceof Callable) {
-                    results.push('<native>');
+                    results.push(ret.toString());
                 } else if (ret !== null) {
                     results.push(ret);
                 }
@@ -63,6 +68,13 @@ export class Interpreter implements ExprVisitor<any>, StmtVisitor<any> {
         return results;
     }
 
+    evaluateWithEnvironment(expr: Expr, env: Environment): any {
+        this.environments.push(env);
+        const result = this.evaluate(expr);
+        this.environments.pop();
+        return result;
+    }
+
     execute(stmt: Stmt): any {
         return stmt.accept(this);
     }
@@ -73,13 +85,13 @@ export class Interpreter implements ExprVisitor<any>, StmtVisitor<any> {
 
     visitAssignmentStmt(stmt: AssignmentStmt): any {
         const value = this.evaluate(stmt.expression);
-        this.environment.define(stmt.name.lexeme, value);
+        this.environment().define(stmt.name.lexeme, value);
         return value;
     }
 
     visitConstStmt(stmt: ConstStmt): any {
         const value = this.evaluate(stmt.expression);
-        this.environment.defineConstant(stmt.name.lexeme, value);
+        this.environment().defineConstant(stmt.name.lexeme, value);
         return value;
     }
 
@@ -130,11 +142,11 @@ export class Interpreter implements ExprVisitor<any>, StmtVisitor<any> {
 
     visitCallExpr(expr: CallExpr): any {
         const name = expr.name.lexeme;
-        if (!this.environment.isDefined(name)) {
+        if (!this.environment().isDefined(name)) {
             return this.interpreterError(`Function "${name}" does not exist`);
         }
 
-        const ref = this.environment.get(name);
+        const ref = this.environment().get(name);
         if (!(ref instanceof Callable)) {
             return this.interpreterError(`${name} is not a function`);
         }
@@ -144,9 +156,13 @@ export class Interpreter implements ExprVisitor<any>, StmtVisitor<any> {
         const args = expr.args;
 
         if (args.length >= arity[0] && (arity.length == 1 || args.length <= arity[1])) {
-            return fn.call(args.map(arg => this.evaluate(arg)));
+            return fn.call(args.map(arg => this.evaluate(arg)), this);
         }
         return this.interpreterError(`Invalid number of arguments passed to function ${name}`);
+    }
+
+    visitFunctionExpr(expr: FunctionExpr): any {
+        return new FunctionCallable(expr.args, expr.body);
     }
 
     visitGroupingExpr(expr: GroupingExpr): any {
@@ -169,7 +185,7 @@ export class Interpreter implements ExprVisitor<any>, StmtVisitor<any> {
     }
 
     visitVariableExpr(expr: VariableExpr): any {
-        return this.environment.get(expr.name.lexeme);
+        return this.environment().get(expr.name.lexeme);
     }
 
     private evaluate(expr: Expr): any {
