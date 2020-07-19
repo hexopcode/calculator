@@ -1,14 +1,8 @@
-import {Environment} from './environment';
-import {Executor} from './executor';
-import {Expr} from './parser/expr';
-import {Token} from "./parser/token";
-
-export type CallableArity = ([number] | [number, number]);
-
-export abstract class Callable {
-    abstract call(args: any[], executor: Executor): any;
-    abstract arity(): CallableArity;
-}
+import {Callable, CallableArity} from './callable';
+import {Environment} from '../environment';
+import {Executor} from '../executor';
+import {Expr} from '../parser/expr';
+import {Token} from "../parser/token";
 
 export class FunctionCallable extends Callable {
     private readonly args: Token[];
