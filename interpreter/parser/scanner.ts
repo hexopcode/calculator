@@ -48,6 +48,9 @@ export class Scanner {
             case ',':
                 this.addToken(TokenType.COMMA);
                 break;
+            case '?':
+                this.addToken(TokenType.QUESTION);
+                break;
             case '(':
                 this.addToken(TokenType.LEFT_PAREN);
                 break;
