@@ -8,10 +8,6 @@ export type CallableArity = ([number] | [number, number]);
 export abstract class Callable {
     abstract call(args: any[], executor: Executor): any;
     abstract arity(): CallableArity;
-
-    toString(): string {
-        return '<native>';
-    }
 }
 
 export class FunctionCallable extends Callable {
