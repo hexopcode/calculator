@@ -11,10 +11,21 @@ export abstract class Value<T> {
         return this.internal;
     }
 
-    abstract assertBoolean(): T;
-    abstract assertCallable(): T;
-    abstract assertNumber(): T;
-    abstract assertString(): T;
+    assertBoolean(): T {
+        return this.typeError('boolean');
+    }
+    
+    assertCallable(): T {
+        return this.typeError('Callable');
+    }
+
+    assertNumber(): T {
+        return this.typeError('number');
+    }
+
+    assertString(): T {
+        return this.typeError('string');
+    }
 
     protected typeError<T>(checkedType: string): T {
         throw new Error(`${this.internal} is a ${typeof this.internal}, not a ${checkedType}`);
