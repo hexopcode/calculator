@@ -199,22 +199,19 @@ export class Parser {
     }
 
     private primary(): Expr {
-        // TODO: symbols
-
-        if (this.match(TokenType.NUMBER, TokenType.STRING)) {
+        if (this.match(TokenType.FALSE)) {
+            return new LiteralExpr(false);
+        } else if (this.match(TokenType.TRUE)) {
+            return new LiteralExpr(true);
+        } else if (this.match(TokenType.NUMBER, TokenType.STRING)) {
             return new LiteralExpr(this.previous().literal);
-        }
-
-        if (this.match(TokenType.IDENTIFIER)) {
+        } else if (this.match(TokenType.IDENTIFIER)) {
             return new VariableExpr(this.previous());
-        }
-
-        if (this.match(TokenType.LEFT_PAREN)) {
+        } else if (this.match(TokenType.LEFT_PAREN)) {
             const expr = this.expression();
             this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after expression');
             return new GroupingExpr(expr);
         }
-
         throw this.error(this.peek(), 'Expect expression');
     }
 
