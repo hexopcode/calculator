@@ -1,4 +1,5 @@
 import {AstPrinter} from './astprinter';
+import {BooleanValue, CallableValue, NumberValue, StringValue} from './values/typed';
 import {Callable} from './callables/callable';
 import {Environment} from './environment';
 import {Executor} from './executor';
@@ -9,8 +10,9 @@ import {Parser} from './parser/parser';
 import {Scanner} from './parser/scanner';
 import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, StmtVisitor} from './parser/stmt';
 import {Token, TokenType} from './parser/token';
+import {Value} from './values/value';
 
-export class Interpreter implements ExprVisitor<any>, StmtVisitor<any>, Executor {
+export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<any>>, Executor {
     private environments: Environment[] = [new Environment()];
     private errors: string[] = [];
 
@@ -19,7 +21,7 @@ export class Interpreter implements ExprVisitor<any>, StmtVisitor<any>, Executor
     }
 
     createEnvironment() {
-        MATHLIB_BUILTINS.forEach((callable, name) => this.environment().defineConstant(name, callable));
+        MATHLIB_BUILTINS.forEach((callable, name) => this.environment().defineConstant(name, new CallableValue(callable)));
         this.run(MATHLIB_STATEMENTS);
     }
 
@@ -52,10 +54,10 @@ export class Interpreter implements ExprVisitor<any>, StmtVisitor<any>, Executor
         try {
             for (const statement of statements) {
                 const ret = this.execute(statement);
-                if (ret instanceof Callable) {
+                if (ret instanceof CallableValue) {
                     results.push(ret.toString());
                 } else if (ret !== null) {
-                    results.push(ret);
+                    results.push(ret.value());
                 }
             }
         } catch (e) {
@@ -69,90 +71,65 @@ export class Interpreter implements ExprVisitor<any>, StmtVisitor<any>, Executor
         return results;
     }
 
-    evaluateWithEnvironment(expr: Expr, env: Environment): any {
+    evaluateWithEnvironment(expr: Expr, env: Environment): Value<any> {
         this.environments.push(env);
         const result = this.evaluate(expr);
         this.environments.pop();
         return result;
     }
 
-    execute(stmt: Stmt): any {
+    execute(stmt: Stmt): Value<any> {
         return stmt.accept(this);
     }
 
-    visitExpressionStmt(stmt: ExpressionStmt): any {
+    visitExpressionStmt(stmt: ExpressionStmt): Value<any> {
         return this.evaluate(stmt.expression);
     }
 
-    visitAssignmentStmt(stmt: AssignmentStmt): any {
+    visitAssignmentStmt(stmt: AssignmentStmt): Value<any> {
         const value = this.evaluate(stmt.expression);
         this.environment().define(stmt.name.lexeme, value);
         return value;
     }
 
-    visitConstStmt(stmt: ConstStmt): any {
+    visitConstStmt(stmt: ConstStmt): Value<any> {
         const value = this.evaluate(stmt.expression);
         this.environment().defineConstant(stmt.name.lexeme, value);
         return value;
     }
 
-    visitBinaryExpr(expr: BinaryExpr): any {
+    visitBinaryExpr(expr: BinaryExpr): Value<any> {
         const left = this.evaluate(expr.left);
         const right = this.evaluate(expr.right);
 
         switch (expr.operator.type) {
             case TokenType.MINUS:
-                if (!this.ensureNumber(left, right)) {
-                    return null;
-                }
-                return left - right;
+                return new NumberValue(left.assertNumber() - right.assertNumber());
             case TokenType.PLUS:
-                if (!this.ensureNumber(left, right)) {
-                    return null;
-                }
-                return left + right;
+                return new NumberValue(left.assertNumber() + right.assertNumber());
             case TokenType.SLASH:
-                if (!this.ensureNumber(left, right)) {
-                    return null;
-                }
-                return left / right;
+                return new NumberValue(left.assertNumber() / right.assertNumber());
             case TokenType.BACKSLASH:
-                if (!this.ensureNumber(left, right)) {
-                    return null;
-                }
-                return Math.floor(left / right);
+                return new NumberValue(Math.floor(left.assertNumber() / right.assertNumber()));
             case TokenType.PERCENT:
-                if (!this.ensureNumber(left, right)) {
-                    return null;
-                }
-                return left % right;
+                return new NumberValue(left.assertNumber() % right.assertNumber());
             case TokenType.STAR:
-                if (!this.ensureNumber(left, right)) {
-                    return null;
-                }
-                return left * right;
+                return new NumberValue(left.assertNumber() * right.assertNumber());
             case TokenType.CARET:
-                if (!this.ensureNumber(left, right)) {
-                    return null;
-                }
-                return Math.pow(left, right);
+                return new NumberValue(Math.pow(left.assertNumber(), right.assertNumber()));
             default:
                 return this.unimplementedOperator(expr.operator.type);
         }
     }
 
-    visitCallExpr(expr: CallExpr): any {
+    visitCallExpr(expr: CallExpr): Value<any> {
         const name = expr.name.lexeme;
         if (!this.environment().isDefined(name)) {
             return this.interpreterError(`Function "${name}" does not exist`);
         }
 
         const ref = this.environment().get(name);
-        if (!(ref instanceof Callable)) {
-            return this.interpreterError(`${name} is not a function`);
-        }
-
-        const fn = ref as Callable;
+        const fn: Callable = ref.assertCallable();
         const arity = fn.arity();
         const args = expr.args;
 
@@ -162,50 +139,49 @@ export class Interpreter implements ExprVisitor<any>, StmtVisitor<any>, Executor
         return this.interpreterError(`Invalid number of arguments passed to function ${name}`);
     }
 
-    visitFunctionExpr(expr: FunctionExpr): any {
-        return new FunctionCallable(expr.args, expr.body);
+    visitFunctionExpr(expr: FunctionExpr): Value<any> {
+        return new CallableValue(new FunctionCallable(expr.args, expr.body));
     }
 
-    visitGroupingExpr(expr: GroupingExpr): any {
+    visitGroupingExpr(expr: GroupingExpr): Value<any> {
         return this.evaluate(expr.expression);
     }
 
-    visitLiteralExpr(expr: LiteralExpr): any {
-        return expr.value;
+    visitLiteralExpr(expr: LiteralExpr): Value<any> {
+        switch (typeof expr.value) {
+            case 'boolean':
+                return new BooleanValue(expr.value);
+            case 'number':
+                return new NumberValue(expr.value);
+            case 'string':
+                return new StringValue(expr.value);
+            default:
+                return this.interpreterError(`Type ${typeof expr.value} not supported in literals`);
+        }
     }
 
-    visitUnaryExpr(expr: UnaryExpr): any {
+    visitUnaryExpr(expr: UnaryExpr): Value<any> {
         const right = this.evaluate(expr.right);
 
         switch (expr.operator.type) {
             case TokenType.MINUS:
-                return this.ensureNumber(right) ? -right : null;
+                return new NumberValue(-right.assertNumber());
             default:
                 return this.unimplementedOperator(expr.operator.type);
         }
     }
 
-    visitVariableExpr(expr: VariableExpr): any {
+    visitVariableExpr(expr: VariableExpr): Value<any> {
         return this.environment().get(expr.name.lexeme);
     }
 
-    private evaluate(expr: Expr): any {
+    private evaluate(expr: Expr): Value<any> {
         return expr.accept(this);
     }
 
     private collectErrors(): string[] {
         console.log(this.errors);
         return this.errors;
-    }
-
-    private ensureNumber(...values: any[]): boolean {
-        for (const value of values) {
-            if (isNaN(value)) {
-                this.errors.push(`'${value}' not a number`);
-                return false;
-            }
-        }
-        return true;
     }
 
     private unimplementedOperator(type: TokenType): null {
@@ -222,7 +198,8 @@ export class Interpreter implements ExprVisitor<any>, StmtVisitor<any>, Executor
         this.errors.push(`Error @ ${token.lexeme}: ${message}`);
     }
 
-    private interpreterError(message: string) {
+    private interpreterError(message: string): null {
         this.errors.push(`Interpreter error: ${message}`);
+        return null;
     }
 }

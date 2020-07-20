@@ -3,6 +3,7 @@ import {Environment} from '../environment';
 import {Executor} from '../executor';
 import {Expr} from '../parser/expr';
 import {Token} from "../parser/token";
+import {Value} from '../values/value';
 
 export class FunctionCallable extends Callable {
     private readonly args: Token[];
@@ -14,9 +15,9 @@ export class FunctionCallable extends Callable {
         this.body = body;
     }
 
-    call(argsValues: any[], executor: Executor): any {
+    call(argsValues: Value<any>[], executor: Executor): Value<any> {
         const env: Environment = new Environment(executor.environment());
-        argsValues.forEach((value: any, index: number) => {
+        argsValues.forEach((value: Value<any>, index: number) => {
             env.define(this.args[index].lexeme, value);
         });
         return executor.evaluateWithEnvironment(this.body, env);
