@@ -27,6 +27,14 @@ export abstract class Value<T> {
         return this.typeError('string');
     }
 
+    assertSameAs(other: Value<any>): void {
+        const thisType = this.constructor;
+        const otherType = other.constructor;
+        if (thisType !== otherType) {
+            other.typeError(typeof this.value());
+        }
+    }
+
     protected typeError<T>(checkedType: string): T {
         throw new Error(`${this.internal} is a ${typeof this.internal}, not a ${checkedType}`);
     }
