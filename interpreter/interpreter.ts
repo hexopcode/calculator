@@ -178,6 +178,8 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<a
         switch (expr.operator.type) {
             case TokenType.MINUS:
                 return new NumberValue(-right.assertNumber());
+            case TokenType.BANG:
+                return new BooleanValue(!right.assertBoolean());
             default:
                 return this.unimplementedOperator(expr.operator.type);
         }
