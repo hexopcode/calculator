@@ -54,10 +54,8 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<a
         try {
             for (const statement of statements) {
                 const ret = this.execute(statement);
-                if (ret instanceof CallableValue) {
+                if (ret !== null) {
                     results.push(ret.toString());
-                } else if (ret !== null) {
-                    results.push(ret.value());
                 }
             }
         } catch (e) {
@@ -117,6 +115,20 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<a
                 return new NumberValue(left.assertNumber() * right.assertNumber());
             case TokenType.CARET:
                 return new NumberValue(Math.pow(left.assertNumber(), right.assertNumber()));
+            case TokenType.BANG_EQUAL:
+                left.assertSameAs(right);
+                return new BooleanValue(left.value() !== right.value());
+            case TokenType.EQUAL_EQUAL:
+                left.assertSameAs(right);
+                return new BooleanValue(left.value() === right.value());
+            case TokenType.GREATER:
+                return new BooleanValue(left.assertNumber() > right.assertNumber());
+            case TokenType.GREATER_EQUAL:
+                return new BooleanValue(left.assertNumber() >= right.assertNumber());
+            case TokenType.LESS:
+                return new BooleanValue(left.assertNumber() < right.assertNumber());
+            case TokenType.LESS_EQUAL:
+                return new BooleanValue(left.assertNumber() <= right.assertNumber());
             default:
                 return this.unimplementedOperator(expr.operator.type);
         }
