@@ -23,7 +23,7 @@ export class AstPrinter implements ExprVisitor<string>, StmtVisitor<string> {
     }
 
     visitTernaryExpr(expr: TernaryExpr): string {
-        return this.parenthesize('?;', expr.first, expr.second, expr.third);
+        return this.parenthesize('?:', expr.first, expr.second, expr.third);
     }
 
     visitCallExpr(expr: CallExpr): string {
