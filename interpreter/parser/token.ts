@@ -36,6 +36,8 @@ export enum TokenType {
 
     // keywords
     CONST,
+    FALSE,
+    TRUE,
 
     EOF,
 }
