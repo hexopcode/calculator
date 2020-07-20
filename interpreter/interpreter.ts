@@ -3,7 +3,7 @@ import {BooleanValue, CallableValue, NumberValue, StringValue} from './values/ty
 import {Callable} from './callables/callable';
 import {Environment} from './environment';
 import {Executor} from './executor';
-import {Expr, BinaryExpr, CallExpr, FunctionExpr, GroupingExpr, LiteralExpr, UnaryExpr, VariableExpr, ExprVisitor} from './parser/expr';
+import {Expr, BinaryExpr, CallExpr, FunctionExpr, GroupingExpr, LiteralExpr, TernaryExpr, UnaryExpr, VariableExpr, ExprVisitor} from './parser/expr';
 import {FunctionCallable} from './callables/function';
 import {MATHLIB_BUILTINS, MATHLIB_STATEMENTS} from './mathlib';
 import {Parser} from './parser/parser';
@@ -132,6 +132,12 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<a
             default:
                 return this.unimplementedOperator(expr.operator.type);
         }
+    }
+
+    visitTernaryExpr(expr: TernaryExpr): Value<any> {
+        return this.evaluate(expr.first).assertBoolean() ?
+            this.evaluate(expr.second) :
+            this.evaluate(expr.third);
     }
 
     visitCallExpr(expr: CallExpr): Value<any> {

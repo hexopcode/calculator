@@ -20,6 +20,22 @@ export class BinaryExpr implements Expr {
     }
 }
 
+export class TernaryExpr implements Expr {
+    readonly first: Expr;
+    readonly second: Expr;
+    readonly third: Expr;
+
+    constructor(first: Expr, second: Expr, third: Expr) {
+        this.first = first;
+        this.second = second;
+        this.third = third;
+    }
+
+    accept<T>(visitor: ExprVisitor<T>): T {
+        return visitor.visitTernaryExpr(this);
+    }
+}
+
 export class CallExpr implements Expr {
     readonly name: Token;
     readonly args: Expr[];
@@ -100,6 +116,7 @@ export class VariableExpr implements Expr {
 
 export interface ExprVisitor<T> {
     visitBinaryExpr(expr: BinaryExpr): T;
+    visitTernaryExpr(expr: TernaryExpr): T;
     visitCallExpr(expr: CallExpr): T;
     visitFunctionExpr(expr: FunctionExpr): T;
     visitGroupingExpr(expr: GroupingExpr): T;
