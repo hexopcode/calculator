@@ -62,6 +62,11 @@ export class Parser {
         const name = this.consume(TokenType.IDENTIFIER, 'Expect function name');
         this.consume(TokenType.LEFT_PAREN, 'Expect "(" after function name');
         const fn = this.functionExpr();
+
+        if (!this.isAtEnd()) {
+            this.consume(TokenType.SEMI_COLON, 'Expect ";" after function declaration');
+        }
+
         return new AssignmentStmt(name, fn);
     }
 
