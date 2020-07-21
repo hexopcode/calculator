@@ -20,8 +20,8 @@ export class NumberValue extends Value<number> {
 
     toString(): string {
         const valueWithPrecision = this.value().toPrecision(10);
-        return this.value() - Math.trunc(this.value()) == 0 ?
-            valueWithPrecision.replace(/\.0+/, '') :
+        return Number.isInteger(Number.parseFloat(valueWithPrecision)) ?
+            valueWithPrecision.replace(/\.0+$/, '') :
             valueWithPrecision.replace(/0+$/, '');
     }
 }
