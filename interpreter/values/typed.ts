@@ -17,6 +17,13 @@ export class NumberValue extends Value<number> {
     assertNumber(): number {
         return this.value();
     }
+
+    toString(): string {
+        const valueWithPrecision = this.value().toPrecision(10);
+        return this.value() - Math.trunc(this.value()) == 0 ?
+            valueWithPrecision.replace(/\.0+/, '') :
+            valueWithPrecision.replace(/0+$/, '');
+    }
 }
 
 export class StringValue extends Value<string> {
