@@ -171,6 +171,11 @@ export class Parser {
             const operator = this.previous();
             const right = this.unary();
             return new UnaryExpr(operator, right);
+        } else if (this.match(TokenType.PIPE)) {
+            const operator = this.previous();
+            const right = this.expression();
+            this.consume(TokenType.PIPE, 'Expect "|" after expression');
+            return new UnaryExpr(operator, right);
         }
 
         return this.call();

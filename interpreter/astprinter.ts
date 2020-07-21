@@ -1,5 +1,6 @@
 import {Expr, BinaryExpr, CallExpr, TernaryExpr, FunctionExpr, GroupingExpr, LiteralExpr, UnaryExpr, VariableExpr, ExprVisitor} from './parser/expr';
 import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, StmtVisitor} from './parser/stmt';
+import {TokenType} from './parser/token';
 
 export class AstPrinter implements ExprVisitor<string>, StmtVisitor<string> {
     print(stmt: Stmt): string {
@@ -47,7 +48,9 @@ export class AstPrinter implements ExprVisitor<string>, StmtVisitor<string> {
     }
 
     visitUnaryExpr(expr: UnaryExpr): string {
-        return this.parenthesize(expr.operator.lexeme, expr.right);
+        return expr.operator.type == TokenType.PIPE ?
+            this.parenthesize('ABS', expr.right) :
+            this.parenthesize(expr.operator.lexeme, expr.right);
     }
 
     visitVariableExpr(expr: VariableExpr): string {

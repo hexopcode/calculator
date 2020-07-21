@@ -186,6 +186,8 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<a
                 return new NumberValue(-right.assertNumber());
             case TokenType.BANG:
                 return new BooleanValue(!right.assertBoolean());
+            case TokenType.PIPE:
+                return new NumberValue(Math.abs(right.assertNumber()));
             default:
                 return this.unimplementedOperator(expr.operator.type);
         }

@@ -4,8 +4,8 @@ const MATHLIB = `
 CONST PI = ${Math.PI}
 CONST E = ${Math.E}
 
+CONST ABS(X) = |X|
 CONST SQRT(X) = X ^ (1 / 2)
-
 CONST ROOT(X, Y) = X < 0 ? -(-X ^ (1 / Y)) : X ^ (1 / Y)
 `
 
