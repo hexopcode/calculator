@@ -15,29 +15,30 @@ export class Parser {
 
     parse(): Stmt[] {
         const statements: Stmt[] = [];
-
         while (!this.isAtEnd()) {
-            statements.push(this.declaration());
+            try {
+                statements.push(this.declaration());
+                if (!this.isAtEnd()) {
+                    this.consume(TokenType.SEMI_COLON, 'Expect ";" after statement');
+                }
+            } catch (e) {
+                break;
+            }
         }
-
         return statements;
     }
 
     private declaration(): Stmt {
-        try {
-            if (this.match(TokenType.CONST)) {
-                return this.constantDeclaration();
-            }
-            if (this.check(TokenType.IDENTIFIER) && this.check(TokenType.LEFT_PAREN, 1) && this.find(TokenType.EQUAL)) {
-                return this.functionDeclaration();
-            }
-            if (this.check(TokenType.IDENTIFIER) && this.check(TokenType.EQUAL, 1)) {
-                return this.assignmentDeclaration();
-            }
-            return this.statement();
-        } catch (e) {
-            return null;
+        if (this.match(TokenType.CONST)) {
+            return this.constantDeclaration();
         }
+        if (this.check(TokenType.IDENTIFIER) && this.check(TokenType.LEFT_PAREN, 1) && this.find(TokenType.EQUAL)) {
+            return this.functionDeclaration();
+        }
+        if (this.check(TokenType.IDENTIFIER) && this.check(TokenType.EQUAL, 1)) {
+            return this.assignmentDeclaration();
+        }
+        return this.expressionStatement();
     }
 
     private constantDeclaration(): Stmt {
@@ -51,10 +52,6 @@ export class Parser {
         this.consume(TokenType.EQUAL, 'Expect "=" after identifier');
         const expr = this.expression();
 
-        if (!this.isAtEnd()) {
-            this.consume(TokenType.SEMI_COLON, 'Expect ";" after constant declaration');
-        }
-
         return new ConstStmt(name, expr);
     }
 
@@ -62,10 +59,6 @@ export class Parser {
         const name = this.consume(TokenType.IDENTIFIER, 'Expect function name');
         this.consume(TokenType.LEFT_PAREN, 'Expect "(" after function name');
         const fn = this.functionExpr();
-
-        if (!this.isAtEnd()) {
-            this.consume(TokenType.SEMI_COLON, 'Expect ";" after function declaration');
-        }
 
         return new AssignmentStmt(name, fn);
     }
@@ -75,15 +68,7 @@ export class Parser {
         this.consume(TokenType.EQUAL, 'Expect "=" after identifier');
         const expr = this.expression();
 
-        if (!this.isAtEnd()) {
-            this.consume(TokenType.SEMI_COLON, 'Expect ";" after assignment declaration');
-        }
-
         return new AssignmentStmt(name, expr);
-    }
-
-    private statement(): Stmt {
-        return this.expressionStatement();
     }
 
     private expressionStatement(): Stmt {
@@ -293,6 +278,6 @@ export class Parser {
 
     error(token: Token, errorMessage: string): Error {
         this.errorReporter(token, errorMessage);
-        return new Error(errorMessage);
+        return new Error(`${errorMessage} but found ${token.lexeme}`);
     }
 }
