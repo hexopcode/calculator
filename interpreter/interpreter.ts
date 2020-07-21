@@ -36,14 +36,14 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<a
         const tokens = scanner.scanTokens();
 
         if (this.errors.length > 0) {
-            return this.collectErrors();
+            return this.errors;
         }
 
         const parser = new Parser(tokens, this.parserError.bind(this));
         const statements : Stmt[] = parser.parse();
 
         if (this.errors.length > 0) {
-            return this.collectErrors();
+            return this.errors;
         }
 
         const results: string[] = [];
@@ -63,7 +63,7 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<a
         }
 
         if (this.errors.length > 0) {
-            return results.concat(this.collectErrors());
+            return results.concat(this.errors);
         }
         
         return results;
@@ -197,11 +197,6 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<a
 
     private evaluate(expr: Expr): Value<any> {
         return expr.accept(this);
-    }
-
-    private collectErrors(): string[] {
-        console.log(this.errors);
-        return this.errors;
     }
 
     private unimplementedOperator(type: TokenType): null {
