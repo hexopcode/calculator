@@ -5,7 +5,9 @@ CONST PI = ${Math.PI}
 CONST E = ${Math.E}
 
 CONST SQRT(X) = X ^ (1 / 2)
-`;
+
+CONST ROOT(X, Y) = X < 0 ? -(-X ^ (1 / Y)) : X ^ (1 / Y)
+`
 
 export const MATHLIB_STATEMENTS = MATHLIB.trim().replace(/\n+/g, ';');
 
