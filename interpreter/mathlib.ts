@@ -19,13 +19,16 @@ CONST FRAC(X) = X - FLOOR(X)
 CONST FRAC2(X) = |X| - FLOOR(|X|)
 CONST FRAC3(X) = X - INT(|X|) * SGN(X)
 
+CONST MAX(X, Y) = X > Y ? X : Y
+CONST MIN(X, Y) = X < Y ? X : Y
+
 CONST COT(X) = 1 / TAN(X)
 CONST SEC(X) = 1 / COS(X)
 CONST CSEC(X) = 1 / SIN(X)
 
 CONST SINH(X) = (1 - EXP(-2 * X)) / (2 * EXP(-X))
 CONST COSH(X) = (1 + EXP(-2 * X)) / (2 * EXP(-X))
-CONST TANH(X) + (EXP(2 * X) - 1) / (EXP(2 * X) + 1)
+CONST TANH(X) = (EXP(2 * X) - 1) / (EXP(2 * X) + 1)
 CONST COTH(X) = (EXP(2 * X) + 1) / (EXP(2 * X) - 1)
 CONST SECH(X) = (2 * EXP(X)) / (EXP(2 * X) + 1)
 CONST CSECH(X) = (2 * EXP(X)) / (EXP(2 * X) - 1)
@@ -36,7 +39,9 @@ CONST ATANH(X) = LOG((1 + X) / (1 - X)) / 2
 CONST ACOTH(X) = LOG((X + 1) / (X - 1)) / 2
 CONST ASECH(X) = LOG((1 + SQRT(1 - X ^ 2)) / X)
 CONST ACSECH(X) = LOG((1 / 2) + SQRT((1 / (X ^ 2)) + 1))
-`
+
+CONST HYPOT(X, Y) = SQRT(X ^ 2 + Y ^ 2)
+`;
 
 export const MATHLIB_STATEMENTS = MATHLIB.trim().replace(/\n+/g, ';');
 
