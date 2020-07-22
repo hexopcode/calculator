@@ -72,11 +72,7 @@ export class Parser {
     }
 
     private expressionStatement(): Stmt {
-        const expr = this.expression();
-        if (!this.isAtEnd()) {
-            this.consume(TokenType.SEMI_COLON, 'Expect ";" after expression');
-        }
-        return new ExpressionStmt(expr);
+        return new ExpressionStmt(this.expression());
     }
 
     private functionExpr(): Expr {
