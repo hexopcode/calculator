@@ -171,7 +171,60 @@ export class Scanner {
         return cc >= '0'.charCodeAt(0) && cc <= '9'.charCodeAt(0);
     }
 
+    private isBinaryDigit(c: string): boolean {
+        return c == '0' || c == '1';
+    }
+
+    private isOctalDigit(c: string): boolean {
+        const cc = c.charCodeAt(0);
+        return cc >= '0'.charCodeAt(0) && cc <= '7'.charCodeAt(0);
+    }
+
+    private isHexDigit(c: string): boolean {
+        const cc = c.charCodeAt(0);
+        return (cc >= '0'.charCodeAt(0) && cc <= '9'.charCodeAt(0)) ||
+            (cc >= 'a'.charCodeAt(0) && cc <= 'f'.charCodeAt(0)) ||
+            (cc >= 'A'.charCodeAt(0) && cc <= 'F'.charCodeAt(0));
+    }
+
     private number() {
+        if (this.peek(-1) == '0') {
+            switch (this.peek()) {
+                case 'b':
+                case 'B':
+                    this.advance();
+                    while (this.isBinaryDigit(this.peek())) {
+                        this.advance();
+                    }
+                    this.addToken(
+                        TokenType.NUMBER,
+                        parseInt(this.expression.substring(this.start + 2, this.current), 2));
+                    return;
+
+                case 'o':
+                case 'O':
+                    this.advance();
+                    while (this.isOctalDigit(this.peek())) {
+                        this.advance();
+                    }
+                    this.addToken(
+                        TokenType.NUMBER,
+                        parseInt(this.expression.substring(this.start + 2, this.current), 8));
+                    return;
+
+                case 'x':
+                case 'X':
+                    this.advance();
+                    while (this.isHexDigit(this.peek())) {
+                        this.advance();
+                    }
+                    this.addToken(
+                        TokenType.NUMBER,
+                        parseInt(this.expression.substring(this.start + 2, this.current), 16));
+                    return;
+            }
+        }
+
         while (this.isDigit(this.peek())) {
             this.advance();
         }
