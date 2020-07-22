@@ -278,7 +278,8 @@ export class Parser {
     }
 
     error(token: Token, errorMessage: string): Error {
-        this.errorReporter(token, errorMessage);
-        return new Error(`${errorMessage} but found ${token.lexeme}`);
+        const fullMessage = `${errorMessage} but found ${token.lexeme}`;
+        this.errorReporter(token, fullMessage);
+        return new Error(fullMessage);
     }
 }
