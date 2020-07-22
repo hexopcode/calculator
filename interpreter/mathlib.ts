@@ -41,6 +41,7 @@ CONST ASECH(X) = LOG((1 + SQRT(1 - X ^ 2)) / X)
 CONST ACSECH(X) = LOG((1 / 2) + SQRT((1 / (X ^ 2)) + 1))
 
 CONST HYPOT(X, Y) = SQRT(X ^ 2 + Y ^ 2)
+CONST FAC(X) = X == 0 ? 1 : X * FAC(X - 1)
 `;
 
 export const MATHLIB_STATEMENTS = MATHLIB.trim().replace(/\n+/g, ';');
