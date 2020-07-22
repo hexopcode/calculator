@@ -3,7 +3,7 @@ import {BooleanValue, CallableValue, NumberValue, StringValue} from './values/ty
 import {Callable} from './callables/callable';
 import {Environment} from './environment';
 import {Executor} from './executor';
-import {Expr, BinaryExpr, CallExpr, FunctionExpr, GroupingExpr, LiteralExpr, TernaryExpr, UnaryExpr, VariableExpr, ExprVisitor} from './parser/expr';
+import {Expr, BinaryExpr, CallExpr, FunctionExpr, GroupingExpr, LiteralExpr, LogicalExpr, TernaryExpr, UnaryExpr, VariableExpr, ExprVisitor} from './parser/expr';
 import {FunctionCallable} from './callables/function';
 import {MATHLIB_BUILTINS, MATHLIB_STATEMENTS} from './mathlib';
 import {Parser} from './parser/parser';
@@ -175,6 +175,19 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<a
                 return new StringValue(expr.value);
             default:
                 return this.interpreterError(`Type ${typeof expr.value} not supported in literals`);
+        }
+    }
+
+    visitLogicalExpr(expr: LogicalExpr): Value<any> {
+        const left = this.evaluate(expr.left).assertBoolean();
+        
+        switch (expr.operator.type) {
+            case TokenType.PIPE_PIPE:
+                return new BooleanValue(left || this.evaluate(expr.right).assertBoolean());
+            case TokenType.AND_AND:
+                return new BooleanValue(left && this.evaluate(expr.right).assertBoolean());
+            default:
+                return this.unimplementedOperator(expr.operator.type);
         }
     }
 

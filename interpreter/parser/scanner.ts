@@ -89,9 +89,6 @@ export class Scanner {
             case '^':
                 this.addToken(TokenType.CARET);
                 break;
-            case '|':
-                this.addToken(TokenType.PIPE);
-                break;
             
             case '!':
                 this.addToken(this.match('=') ? TokenType.BANG_EQUAL : TokenType.BANG);
@@ -104,6 +101,16 @@ export class Scanner {
                 break;
             case '<':
                 this.addToken(this.match('=') ? TokenType.LESS_EQUAL : TokenType.LESS);
+                break;
+            case '|':
+                this.addToken(this.match('|') ? TokenType.PIPE_PIPE : TokenType.PIPE);
+                break;
+            case '&':
+                if (this.match('&')) {
+                    this.addToken(TokenType.AND_AND);
+                } else {
+                    this.errorReporter('Unexpected  character');
+                }
                 break;
             case ' ':
             case '\r':

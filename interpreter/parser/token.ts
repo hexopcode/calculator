@@ -16,7 +16,6 @@ export enum TokenType {
     PERCENT,
     STAR,
     CARET,
-    PIPE,
     POUND,
     
     // one or two chars
@@ -28,6 +27,9 @@ export enum TokenType {
     GREATER_EQUAL,
     LESS,
     LESS_EQUAL,
+    PIPE,
+    PIPE_PIPE,
+    AND_AND,
 
     // literals
     IDENTIFIER,

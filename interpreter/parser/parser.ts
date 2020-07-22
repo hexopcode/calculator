@@ -1,5 +1,5 @@
 import {ParserErrorReporter} from '../common/errorreporter';
-import {Expr, BinaryExpr, FunctionExpr, GroupingExpr, LiteralExpr, TernaryExpr, UnaryExpr, VariableExpr, CallExpr} from './expr';
+import {Expr, BinaryExpr, FunctionExpr, GroupingExpr, LiteralExpr, TernaryExpr, UnaryExpr, VariableExpr, CallExpr, LogicalExpr} from './expr';
 import {Token, TokenType} from './token';
 import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt} from './stmt';
 
@@ -96,13 +96,37 @@ export class Parser {
     }
 
     private ternary(): Expr {
-        let expr = this.equality();
+        const expr = this.or();
 
         if (this.match(TokenType.QUESTION)) {
             const second = this.expression();
             this.consume(TokenType.COLON, 'Expect ":" after expression');
             const third = this.expression();
             return new TernaryExpr(expr, second, third);
+        }
+
+        return expr;
+    }
+
+    private or(): Expr {
+        let expr = this.and();
+
+        while (this.match(TokenType.PIPE_PIPE)) {
+            const operator = this.previous();
+            const right = this.and();
+            expr = new LogicalExpr(expr, operator, right);
+        }
+
+        return expr;
+    }
+
+    private and(): Expr {
+        let expr = this.equality();
+
+        while (this.match(TokenType.AND_AND)) {
+            const operator = this.previous();
+            const right = this.equality();
+            expr = new LogicalExpr(expr, operator, right);
         }
 
         return expr;
