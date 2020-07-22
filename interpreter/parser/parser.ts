@@ -92,11 +92,11 @@ export class Parser {
     }
 
     private expression(): Expr {
-        return this.equality();
+        return this.ternary();
     }
 
-    private equality(): Expr {
-        let expr = this.comparison();
+    private ternary(): Expr {
+        let expr = this.equality();
 
         if (this.match(TokenType.QUESTION)) {
             const second = this.expression();
@@ -104,6 +104,12 @@ export class Parser {
             const third = this.expression();
             return new TernaryExpr(expr, second, third);
         }
+
+        return expr;
+    }
+
+    private equality(): Expr {
+        let expr = this.comparison();
 
         while (this.match(TokenType.EQUAL, TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
             const operator = this.previous();
