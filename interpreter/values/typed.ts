@@ -5,17 +5,29 @@ export class BooleanValue extends Value<boolean> {
     assertBoolean(): boolean {
         return this.value();
     }
+
+    type(): string {
+        return 'BOOL';
+    }
 }
 
 export class CallableValue extends Value<Callable> {
     assertCallable(): Callable {
         return this.value();
     }
+
+    type(): string {
+        return 'FN';
+    }
 }
 
 export class NumberValue extends Value<number> {
     assertNumber(): number {
         return this.value();
+    }
+
+    type(): string {
+        return 'NUM';
     }
 
     toString(): string {
@@ -31,4 +43,7 @@ export class StringValue extends Value<string> {
         return this.value();
     }
 
+    type(): string {
+        return 'STR';
+    }
 }

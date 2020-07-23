@@ -1,10 +1,10 @@
 import {Callable, CallableArity} from './callable';
 import {Executor} from '../executor';
 import {Value} from '../values/value';
-import {NumberValue} from '../values/typed';
+import {BooleanValue, NumberValue} from '../values/typed';
 
-export class NativeCallable extends Callable {
-    private readonly fn: Function;
+export abstract class NativeCallable extends Callable {
+    protected readonly fn: Function;
     private readonly minArgs: number;
     private readonly maxArgs: number;
 
@@ -16,11 +16,6 @@ export class NativeCallable extends Callable {
         this.maxArgs = maxArgs === undefined ? minArgs : maxArgs;
     }
 
-    call(args: Value<any>[], _executor: Executor): Value<any> {
-        const unboxed = args.map(arg => arg.assertNumber());
-        return new NumberValue(this.fn(...unboxed));
-    }
-
     arity(): CallableArity {
         return [this.minArgs, this.maxArgs];
     }
@@ -30,6 +25,34 @@ export class NativeCallable extends Callable {
     }
 }
 
+export class NumberNativeCallable extends NativeCallable {
+    call(args: Value<any>[], _executor: Executor): Value<any> {
+        const unboxed = args.map(arg => arg.assertNumber());
+        return new NumberValue(this.fn(...unboxed));
+    }
+}
+
+export class BooleanNativeCallable extends NativeCallable {
+    call(args: Value<any>[], _executor: Executor): Value<any> {
+        const unboxed = args.map(arg => arg.assertBoolean());
+        return new BooleanValue(this.fn(...unboxed));
+    }
+}
+
 export function __builtin__(fn: Function, minArgs: number = 1, maxArgs?: number): Callable {
-    return new NativeCallable(fn, minArgs, maxArgs);
+    return new NumberNativeCallable(fn, minArgs, maxArgs);
+}
+
+export function __boolean_builtin__(fn: Function, minArgs: number = 1, maxArgs?: number): Callable {
+    return new BooleanNativeCallable(fn, minArgs, maxArgs);
+}
+
+export function __raw_builtin__(fn: Function, minArgs: number = 1, maxArgs?: number): Callable {
+    const raw = class extends NativeCallable {
+        call(args: Value<any>[], _executor: Executor): Value<any> {
+            return this.fn(...args);
+        }
+    };
+
+    return new raw(fn, minArgs, maxArgs);
 }

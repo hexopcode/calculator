@@ -1,6 +1,21 @@
-import {__builtin__} from './callables/native';
+import {__builtin__, __raw_builtin__} from './callables/native';
+import {StringValue, NumberValue} from './values/typed';
+import {Value} from './values/value';
 
 const MATHLIB = `
+CONST ISTYPE(X, T) = TYPE(X) == T
+CONST ISBOOL(X) = ISTYPE(X, "BOOL")
+CONST ISNUM(X) = ISTYPE(X, "NUM")
+CONST ISSTR(X) = ISTYPE(X, "STR")
+CONST ISFN(X) = ISTYPE(X, "FN")
+
+CONST ASSERTBOOL(X) = ASSERT(ISBOOL(X), "NOT A BOOL")
+CONST ASSERTNUM(X) = ASSERT(ISNUM(X), "NOT A NUM")
+CONST ASSERTSTR(X) = ASSERT(ISSTR(X), "NOT A STR")
+CONST ASSERTFN(X) = ASSERT(ISFN(X), "NOT AN FN")
+
+CONST BOOL(X) = ISBOOL(X) ? X : ISNUM(X) ? (X == 0 ? FALSE : TRUE) : ISSTR(X) ? (X == "" ? FALSE : TRUE) : TRUE
+
 CONST E = 2.718281828459045
 CONST PI = 3.141592653589793
 
@@ -61,4 +76,18 @@ export const MATHLIB_BUILTINS = new Map([
 
     ['LOG', __builtin__(Math.log)],
     ['RND', __builtin__(Math.random, 0)],
+
+    ['ASSERT', __raw_builtin__((arg1: Value<any>, arg2?: Value<any>) => {
+        if (!arg1.assertBoolean()) {
+            const message: string = arg2 === undefined ?
+                'Assert error' :
+                arg2.assertString();
+            throw new Error(message);
+        }
+        return true;
+    }, 1, 2)],
+
+    ['TYPE', __raw_builtin__((arg: Value<any>): StringValue => new StringValue(arg.type()))],
+
+    ['NUM', __raw_builtin__((arg: Value<any>): NumberValue => new NumberValue(Number(arg.value())))],
 ]);

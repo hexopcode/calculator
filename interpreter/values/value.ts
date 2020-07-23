@@ -7,6 +7,8 @@ export abstract class Value<T> {
         this.internal = value;
     }
 
+    abstract type(): string;
+
     value(): T {
         return this.internal;
     }
