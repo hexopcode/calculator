@@ -16,7 +16,7 @@ export class NativeCallable extends Callable {
         this.maxArgs = maxArgs === undefined ? minArgs : maxArgs;
     }
 
-    call(args: Value<any>[], _xecutor: Executor): Value<any> {
+    call(args: Value<any>[], _executor: Executor): Value<any> {
         const unboxed = args.map(arg => arg.assertNumber());
         return new NumberValue(this.fn(...unboxed));
     }
