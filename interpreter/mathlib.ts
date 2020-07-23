@@ -1,8 +1,8 @@
 import {__builtin__} from './callables/native';
 
 const MATHLIB = `
-CONST E = ${Math.E}
-CONST PI = ${Math.PI}
+CONST E = 2.718281828459045
+CONST PI = 3.141592653589793
 
 CONST SQRT(X) = X ^ (1 / 2)
 CONST ROOT(X, Y) = X < 0 ? -(-X ^ (1 / Y)) : X ^ (1 / Y)
