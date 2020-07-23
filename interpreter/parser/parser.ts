@@ -82,7 +82,7 @@ export class Parser {
             args.push(this.advance());
             if (this.peek().type != TokenType.RIGHT_PAREN) {
                 this.consume(TokenType.COMMA, 'Expect "," after identifier');
-                this.peekAssert(TokenType.IDENTIFIER, 'Expect idenfier after ","');
+                this.peekAssert(TokenType.IDENTIFIER, 'Expect identifier after ","');
             }
         }
         this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after function arguments');
