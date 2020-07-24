@@ -56,3 +56,13 @@ export function __raw_builtin__(fn: Function, minArgs: number = 1, maxArgs?: num
 
     return new raw(fn, minArgs, maxArgs);
 }
+
+export function __raw_builtin_env__(fn: Function, minArgs: number = 1, maxArgs?: number) : Callable {
+    const raw = class extends NativeCallable {
+        call(args: Value<any>[], evaluator: ExpressionEvaluator): Value<any> {
+            return this.fn(evaluator.environment(), ...args);
+        }
+    };
+
+    return new raw(fn, minArgs, maxArgs);
+}

@@ -109,9 +109,15 @@ export class Scanner {
                 if (this.match('&')) {
                     this.addToken(TokenType.AND_AND);
                 } else {
-                    this.errorReporter('Unexpected  character');
+                    this.errorReporter('Unexpected character');
                 }
                 break;
+            case '$':
+                if (this.isAlpha(this.peek())) {
+                    this.addToken(TokenType.DOLLAR);
+                } else {
+                    this.errorReporter('Unexpected character');
+                }
             case ' ':
             case '\r':
             case '\n':

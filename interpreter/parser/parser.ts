@@ -1,5 +1,5 @@
 import {ParserErrorReporter} from '../common/errorreporter';
-import {Expr, BinaryExpr, FunctionExpr, GroupingExpr, LiteralExpr, TernaryExpr, UnaryExpr, VariableExpr, CallExpr, LogicalExpr} from './expr';
+import {Expr, BinaryExpr, FunctionExpr, GroupingExpr, LiteralExpr, ReferenceExpr, TernaryExpr, UnaryExpr, VariableExpr, CallExpr, LogicalExpr} from './expr';
 import {Token, TokenType} from './token';
 import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt} from './stmt';
 
@@ -227,7 +227,9 @@ export class Parser {
     }
 
     private primary(): Expr {
-        if (this.match(TokenType.FALSE)) {
+        if (this.match(TokenType.DOLLAR)) {
+            return new ReferenceExpr(this.consume(TokenType.IDENTIFIER, 'Expect identifier after "$"'));
+        } else if (this.match(TokenType.FALSE)) {
             return new LiteralExpr(false);
         } else if (this.match(TokenType.TRUE)) {
             return new LiteralExpr(true);

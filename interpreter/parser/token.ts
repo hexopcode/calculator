@@ -17,6 +17,7 @@ export enum TokenType {
     STAR,
     CARET,
     POUND,
+    DOLLAR,
     
     // one or two chars
     BANG,

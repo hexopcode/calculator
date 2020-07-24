@@ -29,6 +29,10 @@ export abstract class Value<T> {
         return this.typeError('string');
     }
 
+    assertReference(): T {
+        return this.typeError('reference');
+    }
+
     assertSameAs(other: Value<any>): void {
         const thisType = this.constructor;
         const otherType = other.constructor;

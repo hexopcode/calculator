@@ -18,9 +18,21 @@ export class Environment {
 
     defineConstant(name: string, value: Value<any>) {
         if (this.constants.has(name) || this.values.has(name)) {
-            throw new Error(`Cannot override value of "${name}`);
+            throw new Error(`Cannot override value of "${name}"`);
         }
         this.constants.set(name, value);
+    }
+
+    freeze(name: string) {
+        if (this.constants.has(name)) {
+            throw new Error(`Cannot freeze constant "${name}"`);
+        } else if (this.values.has(name)) {
+            const value = this.values.get(name);
+            this.constants.set(name, value);
+            this.values.delete(name);
+        } else {
+            throw new Error(`Undefined variable: "${name}"`);
+        }
     }
 
     isConstant(name: string): boolean {
@@ -44,6 +56,6 @@ export class Environment {
             return this.parent.get(name);
         }
 
-        throw new Error(`Undefined variable: "${name}`);
+        throw new Error(`Undefined variable: "${name}"`);
     }
 }

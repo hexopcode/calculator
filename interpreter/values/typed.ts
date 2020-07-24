@@ -47,3 +47,17 @@ export class StringValue extends Value<string> {
         return 'STR';
     }
 }
+
+export class ReferenceValue extends Value<string> {
+    assertReference(): string {
+        return this.value();
+    }
+
+    type(): string {
+        return 'REF';
+    }
+
+    toString(): string {
+        return `$${this.value()}`;
+    }
+}

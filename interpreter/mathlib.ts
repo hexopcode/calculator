@@ -1,5 +1,6 @@
-import {__builtin__, __raw_builtin__} from './callables/native';
-import {StringValue, NumberValue} from './values/typed';
+import {__builtin__, __raw_builtin__, __raw_builtin_env__} from './callables/native';
+import {Environment} from './environment';
+import {NumberValue, ReferenceValue, StringValue} from './values/typed';
 import {Value} from './values/value';
 
 const MATHLIB = `
@@ -92,6 +93,11 @@ export const MATHLIB_BUILTINS = new Map([
     }, 1, 2)],
 
     ['TYPE', __raw_builtin__((arg: Value<any>): StringValue => new StringValue(arg.type()))],
+    ['FREEZE', __raw_builtin_env__((env: Environment, arg: Value<any>): Value<any> => {
+        const ref: string = arg.assertReference();
+        env.freeze(ref);
+        return env.get(ref);
+    })],
 
     ['NUM', __raw_builtin__((arg: Value<any>): NumberValue => new NumberValue(Number(arg.value())))],
 ]);

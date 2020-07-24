@@ -104,6 +104,18 @@ export class LogicalExpr implements Expr {
     }
 }
 
+export class ReferenceExpr implements Expr {
+    readonly ref: Token;
+
+    constructor(ref: Token) {
+        this.ref = ref;
+    }
+
+    accept<T>(visitor: ExprVisitor<T>): T {
+        return visitor.visitReferenceExpr(this);
+    }
+}
+
 export class UnaryExpr implements Expr {
     readonly operator: Token;
     readonly right: Expr;
@@ -138,6 +150,7 @@ export interface ExprVisitor<T> {
     visitGroupingExpr(expr: GroupingExpr): T;
     visitLiteralExpr(expr: LiteralExpr): T;
     visitLogicalExpr(expr: LogicalExpr): T;
+    visitReferenceExpr(expr: ReferenceExpr): T;
     visitUnaryExpr(expr: UnaryExpr): T;
     visitVariableExpr(expr: VariableExpr): T;
 }

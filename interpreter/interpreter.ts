@@ -1,9 +1,9 @@
 import {AstPrinter} from './astprinter';
-import {BooleanValue, CallableValue, NumberValue, StringValue} from './values/typed';
+import {BooleanValue, CallableValue, NumberValue, ReferenceValue, StringValue} from './values/typed';
 import {Callable} from './callables/callable';
 import {Environment} from './environment';
 import {ExpressionEvaluator} from './expressionevaluator';
-import {Expr, BinaryExpr, CallExpr, FunctionExpr, GroupingExpr, LiteralExpr, LogicalExpr, TernaryExpr, UnaryExpr, VariableExpr, ExprVisitor} from './parser/expr';
+import {Expr, BinaryExpr, CallExpr, FunctionExpr, GroupingExpr, LiteralExpr, LogicalExpr, ReferenceExpr, TernaryExpr, UnaryExpr, VariableExpr, ExprVisitor} from './parser/expr';
 import {FunctionCallable} from './callables/function';
 import {MATHLIB_BUILTINS, MATHLIB_STATEMENTS} from './mathlib';
 import {Parser} from './parser/parser';
@@ -189,6 +189,10 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<a
             default:
                 return this.unimplementedOperator(expr.operator.type);
         }
+    }
+
+    visitReferenceExpr(expr: ReferenceExpr): Value<any> {
+        return new ReferenceValue(expr.ref.lexeme);
     }
 
     visitUnaryExpr(expr: UnaryExpr): Value<any> {
