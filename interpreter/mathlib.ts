@@ -72,6 +72,7 @@ export const MATHLIB_BUILTINS = new Map([
     ['ASIN', __builtin__(Math.asin)],
     ['ACOS', __builtin__(Math.acos)],
     ['ATAN', __builtin__(Math.atan)],
+    ['ATAN2', __builtin__(Math.atan2, 2)],
 
     ['CEIL', __builtin__(Math.ceil)],
     ['FLOOR', __builtin__(Math.floor)],
