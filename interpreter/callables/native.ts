@@ -1,5 +1,5 @@
 import {Callable, CallableArity} from './callable';
-import {Executor} from '../executor';
+import {ExpressionEvaluator} from '../expressionevaluator';
 import {Value} from '../values/value';
 import {BooleanValue, NumberValue} from '../values/typed';
 
@@ -26,14 +26,14 @@ export abstract class NativeCallable extends Callable {
 }
 
 export class NumberNativeCallable extends NativeCallable {
-    call(args: Value<any>[], _executor: Executor): Value<any> {
+    call(args: Value<any>[], _evaluator: ExpressionEvaluator): Value<any> {
         const unboxed = args.map(arg => arg.assertNumber());
         return new NumberValue(this.fn(...unboxed));
     }
 }
 
 export class BooleanNativeCallable extends NativeCallable {
-    call(args: Value<any>[], _executor: Executor): Value<any> {
+    call(args: Value<any>[], _evaluator: ExpressionEvaluator): Value<any> {
         const unboxed = args.map(arg => arg.assertBoolean());
         return new BooleanValue(this.fn(...unboxed));
     }
@@ -49,7 +49,7 @@ export function __boolean_builtin__(fn: Function, minArgs: number = 1, maxArgs?:
 
 export function __raw_builtin__(fn: Function, minArgs: number = 1, maxArgs?: number): Callable {
     const raw = class extends NativeCallable {
-        call(args: Value<any>[], _executor: Executor): Value<any> {
+        call(args: Value<any>[], _evaluator: ExpressionEvaluator): Value<any> {
             return this.fn(...args);
         }
     };

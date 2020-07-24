@@ -2,7 +2,7 @@ import {AstPrinter} from './astprinter';
 import {BooleanValue, CallableValue, NumberValue, StringValue} from './values/typed';
 import {Callable} from './callables/callable';
 import {Environment} from './environment';
-import {Executor} from './executor';
+import {ExpressionEvaluator} from './expressionevaluator';
 import {Expr, BinaryExpr, CallExpr, FunctionExpr, GroupingExpr, LiteralExpr, LogicalExpr, TernaryExpr, UnaryExpr, VariableExpr, ExprVisitor} from './parser/expr';
 import {FunctionCallable} from './callables/function';
 import {MATHLIB_BUILTINS, MATHLIB_STATEMENTS} from './mathlib';
@@ -12,7 +12,7 @@ import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, StmtVisitor} from './pa
 import {Token, TokenType} from './parser/token';
 import {Value} from './values/value';
 
-export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<any>>, Executor {
+export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<any>>, ExpressionEvaluator {
     private environments: Environment[] = [new Environment()];
     private errors: string[] = [];
 
