@@ -33,7 +33,12 @@ export class Parser {
             return this.constantDeclaration();
         }
         if (this.check(TokenType.IDENTIFIER) && this.check(TokenType.LEFT_PAREN, 1) && this.find(TokenType.EQUAL)) {
-            return this.functionDeclaration();
+            const equalPos = this.findFirst(TokenType.EQUAL);
+            const semiColonPos = this.findFirst(TokenType.SEMI_COLON);
+
+            if (semiColonPos === -1 || equalPos < semiColonPos) {
+                return this.functionDeclaration();
+            }
         }
         if (this.check(TokenType.IDENTIFIER) && this.check(TokenType.EQUAL, 1)) {
             return this.assignmentDeclaration();
@@ -260,13 +265,17 @@ export class Parser {
         return false;
     }
 
-    private find(type: TokenType, lookAhead: number = 0): boolean {
+    private findFirst(type: TokenType, lookAhead: number = 0): number {
         for (let pos = this.current + lookAhead; pos < this.tokens.length; ++pos) {
             if (this.tokens[pos].type == type) {
-                return true;
+                return pos;
             }
         }
-        return false;
+        return -1;
+    }
+
+    private find(type: TokenType, lookAhead: number = 0): boolean {
+        return this.findFirst(type, lookAhead) !== -1;
     }
 
     private check(type: TokenType, lookAhead: number = 0): boolean {
