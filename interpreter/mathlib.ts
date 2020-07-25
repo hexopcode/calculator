@@ -9,13 +9,19 @@ CONST ISBOOL(X) = ISTYPE(X, "BOOL")
 CONST ISNUM(X) = ISTYPE(X, "NUM")
 CONST ISSTR(X) = ISTYPE(X, "STR")
 CONST ISFN(X) = ISTYPE(X, "FN")
+CONST ISREF(X) = ISTYPE(X, "REF")
 
 CONST ASSERTBOOL(X) = ASSERT(ISBOOL(X), "NOT A BOOL")
 CONST ASSERTNUM(X) = ASSERT(ISNUM(X), "NOT A NUM")
 CONST ASSERTSTR(X) = ASSERT(ISSTR(X), "NOT A STR")
 CONST ASSERTFN(X) = ASSERT(ISFN(X), "NOT AN FN")
 
-CONST BOOL(X) = ISBOOL(X) ? X : ISNUM(X) ? (X == 0 ? FALSE : TRUE) : ISSTR(X) ? (X == "" ? FALSE : TRUE) : TRUE
+BOOL(X) = X, ISBOOL(X)
+BOOL(X) = X == 0 ? FALSE : TRUE, ISNUM(X)
+BOOL(X) = X == "" ? FALSE : TRUE, ISSTR(X)
+BOOL(X) = TRUE, ISFN(X)
+BOOL(X) = TRUE, ISREF(X)
+FREEZE($BOOL)
 
 CONST E = 2.718281828459045
 CONST PI = 3.141592653589793
@@ -24,7 +30,10 @@ CONST RNDRANGE(X, Y) = RND() * (Y - X) + X
 CONST RNDRANGEINT(X, Y) = FLOOR(RND() * (FLOOR(Y) - CEIL(X))) + CEIL(X)
 
 CONST SQRT(X) = X ^ (1 / 2)
-CONST ROOT(X, Y) = X < 0 ? -(-X ^ (1 / Y)) : X ^ (1 / Y)
+
+ROOT(X, Y) = -(-X ^ (1 / Y)), X < 0
+ROOT(X, Y) = X ^ (1 / Y)
+FREEZE($ROOT)
 
 CONST EXP(X) = E ^ X
 CONST LOGN(X, N) = LOG(X) / LOG(N)
@@ -95,7 +104,7 @@ export const MATHLIB_BUILTINS = new Map([
     ['TYPE', __raw_builtin__((arg: Value<any>): StringValue => new StringValue(arg.type()))],
     ['FREEZE', __raw_builtin_env__((env: Environment, arg: Value<any>): Value<any> => {
         const ref: string = arg.assertReference();
-        env.freeze(ref);
+        env.parentOrSelf().freeze(ref);
         return env.get(ref);
     })],
 

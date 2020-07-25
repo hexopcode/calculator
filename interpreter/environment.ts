@@ -23,6 +23,10 @@ export class Environment {
         this.constants.set(name, value);
     }
 
+    parentOrSelf(): Environment {
+        return this.parent || this;
+    }
+
     freeze(name: string) {
         if (this.constants.has(name)) {
             throw new Error(`Cannot freeze constant "${name}"`);
