@@ -88,7 +88,12 @@ export class Parser {
         this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after function arguments');
         this.consume(TokenType.EQUAL, 'Expect "=" after function signature');
 
-        return new FunctionExpr(args, this.expression());
+        const expr = this.expression();
+        if (this.match(TokenType.COMMA)) {
+            return new FunctionExpr(args, expr, this.or());
+        }
+
+        return new FunctionExpr(args, expr);
     }
 
     private expression(): Expr {

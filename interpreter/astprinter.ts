@@ -33,7 +33,9 @@ export class AstPrinter implements ExprVisitor<string>, StmtVisitor<string> {
 
     visitFunctionExpr(expr: FunctionExpr): string {
         const args = expr.args.map(arg => arg.lexeme).join(' ');
-        return this.parenthesize(`fn (${args})`, expr.body);
+        return expr.cond ?
+            this.parenthesize(`fn (${args})`, expr.body, expr.cond) :
+            this.parenthesize(`fn (${args})`, expr.body);
     }
 
     visitGroupingExpr(expr: GroupingExpr): string {

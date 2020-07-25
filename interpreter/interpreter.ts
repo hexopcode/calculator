@@ -1,11 +1,13 @@
 import {AstPrinter} from './astprinter';
 import {BooleanValue, CallableValue, NumberValue, ReferenceValue, StringValue} from './values/typed';
+import {CALL_ASSERT_FALSE} from './passes/partialcallables';
 import {Callable} from './callables/callable';
 import {Environment} from './environment';
 import {ExpressionEvaluator} from './expressionevaluator';
 import {Expr, BinaryExpr, CallExpr, FunctionExpr, GroupingExpr, LiteralExpr, LogicalExpr, ReferenceExpr, TernaryExpr, UnaryExpr, VariableExpr, ExprVisitor} from './parser/expr';
 import {FunctionCallable} from './callables/function';
 import {MATHLIB_BUILTINS, MATHLIB_STATEMENTS} from './mathlib';
+import {NativeCallable} from './callables/native';
 import {Parser} from './parser/parser';
 import {Scanner} from './parser/scanner';
 import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, StmtVisitor} from './parser/stmt';
@@ -85,7 +87,28 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<a
     }
 
     visitAssignmentStmt(stmt: AssignmentStmt): Value<any> {
-        const value = this.evaluate(stmt.expression);
+        let value = this.evaluate(stmt.expression);
+
+        if (this.environment().isDefined(stmt.name.lexeme)) {
+            if (!this.environment().isConstant(stmt.name.lexeme)) {
+                const parent = this.environment().get(stmt.name.lexeme);
+
+                if (parent instanceof CallableValue && value instanceof CallableValue) {
+                    const parentCallable = parent.assertCallable();
+                    const callable = value.assertCallable();
+
+                    if (parentCallable instanceof NativeCallable) {
+                        return this.interpreterError('Cannot add partial function to native functions');
+                    }
+
+                    if (callable instanceof FunctionCallable) {
+                        (parentCallable as FunctionCallable).concat(callable);
+                        value = new CallableValue(parentCallable);
+                    }
+                }
+            }
+        }
+
         this.environment().define(stmt.name.lexeme, value);
         return value;
     }
@@ -158,7 +181,12 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<a
     }
 
     visitFunctionExpr(expr: FunctionExpr): Value<any> {
-        return new CallableValue(new FunctionCallable(expr.args, expr.body));
+        // expr.cond || TRUE ? expr.body : ASSERT(FALSE)
+        const ternary = new TernaryExpr(
+            expr.cond ? expr.cond : new LiteralExpr(true),
+            expr.body,
+            CALL_ASSERT_FALSE);
+        return new CallableValue(new FunctionCallable(expr.args, ternary));
     }
 
     visitGroupingExpr(expr: GroupingExpr): Value<any> {

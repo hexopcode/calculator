@@ -1,15 +1,16 @@
+import {CALL_ASSERT_FALSE} from '../passes/partialcallables';
 import {Callable, CallableArity} from './callable';
 import {Environment} from '../environment';
 import {ExpressionEvaluator} from '../expressionevaluator';
-import {Expr} from '../parser/expr';
+import {TernaryExpr} from '../parser/expr';
 import {Token} from "../parser/token";
 import {Value} from '../values/value';
 
 export class FunctionCallable extends Callable {
     private readonly args: Token[];
-    private readonly body: Expr;
+    private readonly body: TernaryExpr;
 
-    constructor(args: Token[], body: Expr) {
+    constructor(args: Token[], body: TernaryExpr) {
         super();
         this.args = args;
         this.body = body;
@@ -29,5 +30,18 @@ export class FunctionCallable extends Callable {
 
     toString(): string {
         return '<custom fn>';
+    }
+
+    concat(callable: FunctionCallable) {
+        let leafTernary = this.body;
+        while (leafTernary.third instanceof TernaryExpr) {
+            leafTernary = leafTernary.third;
+        }
+
+        if (leafTernary.third === CALL_ASSERT_FALSE) {
+            leafTernary.third = callable.body;
+        } else {
+            throw new Error('Cannot add partial function to non-partial function');
+        }
     }
 }
