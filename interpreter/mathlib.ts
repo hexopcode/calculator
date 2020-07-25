@@ -1,6 +1,6 @@
 import {__builtin__, __raw_builtin__, __raw_builtin_env__} from './callables/native';
 import {Environment} from './environment';
-import {NumberValue, ReferenceValue, StringValue} from './values/typed';
+import {NumberValue, StringValue, BooleanValue} from './values/typed';
 import {Value} from './values/value';
 
 const MATHLIB = `
@@ -106,6 +106,22 @@ export const MATHLIB_BUILTINS = new Map([
         const ref: string = arg.assertReference();
         env.parentOrSelf().freeze(ref);
         return env.get(ref);
+    })],
+    ['ISDEF', __raw_builtin_env__((env: Environment, arg: Value<any>): Value<any> => {
+        const ref: string = arg.assertReference();
+        return new BooleanValue(env.isDefined(ref));
+    })],
+    ['ISFROZEN', __raw_builtin_env__((env: Environment, arg: Value<any>): Value<any> => {
+        const ref: string = arg.assertReference();
+        return new BooleanValue(env.isDefined(ref) && env.isConstant(ref));
+    })],
+    ['RESOLVE', __raw_builtin_env__((env: Environment, arg: Value<any>): Value<any> => {
+        const ref: string = arg.assertReference();
+        return env.get(ref);
+    })],
+    ['DELETE', __raw_builtin_env__((env: Environment, arg: Value<any>): Value<any> => {
+        const ref: string = arg.assertReference();
+        return env.delete(ref);
     })],
 
     ['NUM', __raw_builtin__((arg: Value<any>): NumberValue => new NumberValue(Number(arg.value())))],

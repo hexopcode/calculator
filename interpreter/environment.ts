@@ -40,7 +40,7 @@ export class Environment {
     }
 
     isConstant(name: string): boolean {
-        return this.constants.has(name) || (this.parent && this.parent.constants.has(name));
+        return this.constants.has(name) || (!!this.parent && this.parent.isConstant(name));
     }
 
     isDefined(name: string): boolean {
@@ -61,5 +61,21 @@ export class Environment {
         }
 
         throw new Error(`Undefined variable: "${name}"`);
+    }
+
+    delete(name: string): Value<any> {
+        if (this.values.has(name)) {
+            const ret = this.values.get(name);
+            this.values.delete(name);
+            return ret;
+        } else if (this.constants.has(name)) {
+            const ret = this.constants.get(name);
+            this.constants.delete(name);
+            return ret;
+        } else if (this.parent) {
+            return this.parent.delete(name);
+        } else {
+            throw new Error(`Undefined variable: "${name}"`);
+        }
     }
 }
