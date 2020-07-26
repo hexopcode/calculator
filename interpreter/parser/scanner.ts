@@ -38,7 +38,7 @@ export class Scanner {
         const c = this.advance();
         switch (c) {
             case '#':
-                while (!this.isAtEnd()) {
+                while (!this.match('\n') || this.match('\r')) {
                     this.advance();
                 }
                 break;
