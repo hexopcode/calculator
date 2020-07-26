@@ -41,6 +41,7 @@ export enum TokenType {
     CONST,
     FN,
     FALSE,
+    IMPORT,
     TRUE,
 
     EOF,

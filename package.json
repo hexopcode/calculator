@@ -11,6 +11,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/core-js": "^2.5.3",
+    "parcel-plugin-static-files-copy": "^2.4.3",
     "sass": "^1.26.10",
     "typescript": "^3.9.6"
   },

@@ -15,6 +15,10 @@ export class Calc extends React.Component {
         super(props);
     }
 
+    async componentDidMount() {
+        await this.interpreter.createEnvironment();
+    }
+
     render() {
         return (
             <div id="calc">
@@ -24,8 +28,8 @@ export class Calc extends React.Component {
         );
     }
 
-    handleInput(text: string) {
-        const result: string[] = this.interpreter.run(text);
+    async handleInput(text: string) {
+        const result: string[] = await this.interpreter.run(text);
         this.screenRef.current.addLines(...result);
     }
 }

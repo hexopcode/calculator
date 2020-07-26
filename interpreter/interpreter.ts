@@ -10,21 +10,17 @@ import {MATHLIB_BUILTINS, MATHLIB_STATEMENTS} from './mathlib';
 import {NativeCallable} from './callables/native';
 import {Parser} from './parser/parser';
 import {Scanner} from './parser/scanner';
-import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, StmtVisitor} from './parser/stmt';
+import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, ImportStmt, StmtVisitor} from './parser/stmt';
 import {Token, TokenType} from './parser/token';
 import {Value} from './values/value';
 
-export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<any>>, ExpressionEvaluator {
+export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise<Value<any>>>, ExpressionEvaluator {
     private environments: Environment[] = [new Environment()];
     private errors: string[] = [];
 
-    constructor() {
-        this.createEnvironment();
-    }
-
-    createEnvironment() {
+    async createEnvironment() {
         MATHLIB_BUILTINS.forEach((callable, name) => this.environment().defineConstant(name, new CallableValue(callable)));
-        this.run(MATHLIB_STATEMENTS);
+        await this.run(MATHLIB_STATEMENTS);
 
         if (this.errors.length > 0) {
             for (const e of this.errors) {
@@ -37,7 +33,7 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<a
         return this.environments[this.environments.length - 1];
     }
 
-    run(source: string): string[] {
+    async run(source: string): Promise<string[]> {
         this.errors = [];
 
         const scanner = new Scanner(source, this.scannerError.bind(this));
@@ -61,7 +57,7 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<a
 
         try {
             for (const statement of statements) {
-                const ret = this.execute(statement);
+                const ret = await this.execute(statement);
                 if (ret !== null) {
                     results.push(ret.toString());
                 }
@@ -84,15 +80,15 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<a
         return result;
     }
 
-    execute(stmt: Stmt): Value<any> {
+    async execute(stmt: Stmt): Promise<Value<any>> {
         return stmt.accept(this);
     }
 
-    visitExpressionStmt(stmt: ExpressionStmt): Value<any> {
+    async visitExpressionStmt(stmt: ExpressionStmt): Promise<Value<any>> {
         return this.evaluate(stmt.expression);
     }
 
-    visitAssignmentStmt(stmt: AssignmentStmt): Value<any> {
+    async visitAssignmentStmt(stmt: AssignmentStmt): Promise<Value<any>> {
         let value = this.evaluate(stmt.expression);
 
         if (this.environment().isDefined(stmt.name.lexeme)) {
@@ -119,10 +115,16 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<a
         return value;
     }
 
-    visitConstStmt(stmt: ConstStmt): Value<any> {
+    async visitConstStmt(stmt: ConstStmt): Promise<Value<any>> {
         const value = this.evaluate(stmt.expression);
         this.environment().defineConstant(stmt.name.lexeme, value);
         return value;
+    }
+
+    async visitImportStmt(stmt: ImportStmt): Promise<Value<any>> {
+        const source = await fetch(`${stmt.path.literal}`).then(response => response.text());
+        await this.run(source);
+        return null;
     }
 
     visitBinaryExpr(expr: BinaryExpr): Value<any> {

@@ -1,7 +1,7 @@
 import {ParserErrorReporter} from '../common/errorreporter';
 import {Expr, BinaryExpr, FunctionExpr, GroupingExpr, LiteralExpr, ReferenceExpr, TernaryExpr, UnaryExpr, VariableExpr, CallExpr, LogicalExpr} from './expr';
 import {Token, TokenType} from './token';
-import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt} from './stmt';
+import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, ImportStmt} from './stmt';
 
 export class Parser {
     private tokens: Token[];
@@ -29,6 +29,9 @@ export class Parser {
     }
 
     private declaration(): Stmt {
+        if (this.match(TokenType.IMPORT)) {
+            return this.importDeclaration();
+        }
         if (this.match(TokenType.CONST)) {
             return this.constantDeclaration();
         }
@@ -41,10 +44,15 @@ export class Parser {
         return this.expressionStatement();
     }
 
+    private importDeclaration(): Stmt {
+        const path = this.consume(TokenType.STRING, "Expect path after import keyword");
+        return new ImportStmt(path);
+    }
+
     private constantDeclaration(): Stmt {
         if (this.match(TokenType.FN)) {
             const name = this.consume(TokenType.IDENTIFIER, 'Expect constant name');
-            this.consume(TokenType.LEFT_PAREN, 'Expect "(" after functino name');
+            this.consume(TokenType.LEFT_PAREN, 'Expect "(" after function name');
             const fn = this.functionExpr();
             return new ConstStmt(name, fn);
         }

@@ -45,8 +45,21 @@ export class ConstStmt implements Stmt {
     }
 }
 
+export class ImportStmt implements Stmt {
+    readonly path: Token;
+
+    constructor(path: Token) {
+        this.path = path;
+    }
+
+    accept<T>(visitor: StmtVisitor<T>): T {
+        return visitor.visitImportStmt(this);
+    }
+}
+
 export interface StmtVisitor<T> {
     visitExpressionStmt(stmt: ExpressionStmt): T;
     visitAssignmentStmt(stmt: AssignmentStmt): T;
     visitConstStmt(stmt: ConstStmt): T;
+    visitImportStmt(stmt: ImportStmt): T;
 }
