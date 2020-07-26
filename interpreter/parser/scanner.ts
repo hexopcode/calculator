@@ -3,6 +3,7 @@ import {Token, TokenType} from './token';
 
 const KEYWORDS: Map<string, TokenType> = new Map([
     ['CONST', TokenType.CONST],
+    ['FN', TokenType.FN],
     ['FALSE', TokenType.FALSE],
     ['TRUE', TokenType.TRUE],
 ]);

@@ -4,76 +4,76 @@ import {NumberValue, StringValue, BooleanValue} from './values/typed';
 import {Value} from './values/value';
 
 const MATHLIB = `
-CONST ISTYPE(X, T) = TYPE(X) == T
-CONST ISBOOL(X) = ISTYPE(X, "BOOL")
-CONST ISNUM(X) = ISTYPE(X, "NUM")
-CONST ISSTR(X) = ISTYPE(X, "STR")
-CONST ISFN(X) = ISTYPE(X, "FN")
-CONST ISREF(X) = ISTYPE(X, "REF")
+CONST FN ISTYPE(X, T) = TYPE(X) == T
+CONST FN ISBOOL(X) = ISTYPE(X, "BOOL")
+CONST FN ISNUM(X) = ISTYPE(X, "NUM")
+CONST FN ISSTR(X) = ISTYPE(X, "STR")
+CONST FN ISFN(X) = ISTYPE(X, "FN")
+CONST FN ISREF(X) = ISTYPE(X, "REF")
 
-CONST ASSERTBOOL(X) = ASSERT(ISBOOL(X), "NOT A BOOL")
-CONST ASSERTNUM(X) = ASSERT(ISNUM(X), "NOT A NUM")
-CONST ASSERTSTR(X) = ASSERT(ISSTR(X), "NOT A STR")
-CONST ASSERTFN(X) = ASSERT(ISFN(X), "NOT AN FN")
+CONST FN ASSERTBOOL(X) = ASSERT(ISBOOL(X), "NOT A BOOL")
+CONST FN ASSERTNUM(X) = ASSERT(ISNUM(X), "NOT A NUM")
+CONST FN ASSERTSTR(X) = ASSERT(ISSTR(X), "NOT A STR")
+CONST FN ASSERTFN(X) = ASSERT(ISFN(X), "NOT AN FN")
 
-BOOL(X) = X, ISBOOL(X)
-BOOL(X) = X == 0 ? FALSE : TRUE, ISNUM(X)
-BOOL(X) = X == "" ? FALSE : TRUE, ISSTR(X)
-BOOL(X) = TRUE, ISFN(X)
-BOOL(X) = TRUE, ISREF(X)
+FN BOOL(X) = X, ISBOOL(X)
+FN BOOL(X) = X == 0 ? FALSE : TRUE, ISNUM(X)
+FN BOOL(X) = X == "" ? FALSE : TRUE, ISSTR(X)
+FN BOOL(X) = TRUE, ISFN(X)
+FN BOOL(X) = TRUE, ISREF(X)
 FREEZE($BOOL)
 
 CONST E = 2.718281828459045
 CONST PI = 3.141592653589793
 
-CONST RNDRANGE(X, Y) = RND() * (Y - X) + X
-CONST RNDRANGEINT(X, Y) = FLOOR(RND() * (FLOOR(Y) - CEIL(X))) + CEIL(X)
+CONST FN RNDRANGE(X, Y) = RND() * (Y - X) + X
+CONST FN RNDRANGEINT(X, Y) = FLOOR(RND() * (FLOOR(Y) - CEIL(X))) + CEIL(X)
 
-CONST SQRT(X) = X ^ (1 / 2)
+CONST FN SQRT(X) = X ^ (1 / 2)
 
-ROOT(X, Y) = -(-X ^ (1 / Y)), X < 0
-ROOT(X, Y) = X ^ (1 / Y)
+FN ROOT(X, Y) = -(-X ^ (1 / Y)), X < 0
+FN ROOT(X, Y) = X ^ (1 / Y)
 FREEZE($ROOT)
 
-CONST EXP(X) = E ^ X
-CONST LOGN(X, N) = LOG(X) / LOG(N)
-CONST LOG10(X) = LOGN(X, 10)
-CONST LOG2(X) = LOGN(X, 2)
+CONST FN EXP(X) = E ^ X
+CONST FN LOGN(X, N) = LOG(X) / LOG(N)
+CONST FN LOG10(X) = LOGN(X, 10)
+CONST FN LOG2(X) = LOGN(X, 2)
 
-CONST ABS(X) = |X|
-CONST SGN(X) = X > 0 ? 1 : X < 0 ? -1 : 0
-CONST TRUNC(X) = INT(X)
-CONST FRAC(X) = X - FLOOR(X)
-CONST FRAC2(X) = |X| - FLOOR(|X|)
-CONST FRAC3(X) = X - INT(|X|) * SGN(X)
+CONST FN ABS(X) = |X|
+CONST FN SGN(X) = X > 0 ? 1 : X < 0 ? -1 : 0
+CONST FN TRUNC(X) = INT(X)
+CONST FN FRAC(X) = X - FLOOR(X)
+CONST FN FRAC2(X) = |X| - FLOOR(|X|)
+CONST FN FRAC3(X) = X - INT(|X|) * SGN(X)
 
-CONST MAX(X, Y) = X > Y ? X : Y
-CONST MIN(X, Y) = X < Y ? X : Y
+CONST FN MAX(X, Y) = X > Y ? X : Y
+CONST FN MIN(X, Y) = X < Y ? X : Y
 
-CONST COT(X) = 1 / TAN(X)
-CONST SEC(X) = 1 / COS(X)
-CONST CSEC(X) = 1 / SIN(X)
+CONST FN COT(X) = 1 / TAN(X)
+CONST FN SEC(X) = 1 / COS(X)
+CONST FN CSEC(X) = 1 / SIN(X)
 
-CONST SINH(X) = (1 - EXP(-2 * X)) / (2 * EXP(-X))
-CONST COSH(X) = (1 + EXP(-2 * X)) / (2 * EXP(-X))
-CONST TANH(X) = (EXP(2 * X) - 1) / (EXP(2 * X) + 1)
-CONST COTH(X) = (EXP(2 * X) + 1) / (EXP(2 * X) - 1)
-CONST SECH(X) = (2 * EXP(X)) / (EXP(2 * X) + 1)
-CONST CSECH(X) = (2 * EXP(X)) / (EXP(2 * X) - 1)
+CONST FN SINH(X) = (1 - EXP(-2 * X)) / (2 * EXP(-X))
+CONST FN COSH(X) = (1 + EXP(-2 * X)) / (2 * EXP(-X))
+CONST FN TANH(X) = (EXP(2 * X) - 1) / (EXP(2 * X) + 1)
+CONST FN COTH(X) = (EXP(2 * X) + 1) / (EXP(2 * X) - 1)
+CONST FN SECH(X) = (2 * EXP(X)) / (EXP(2 * X) + 1)
+CONST FN CSECH(X) = (2 * EXP(X)) / (EXP(2 * X) - 1)
 
-CONST ASINH(X) = LOG(X + SQRT(X * X + 1))
-CONST ACOSH(X) = LOG(X + SQRT(X * X - 1))
-CONST ATANH(X) = LOG((1 + X) / (1 - X)) / 2
-CONST ACOTH(X) = LOG((X + 1) / (X - 1)) / 2
-CONST ASECH(X) = LOG((1 + SQRT(1 - X ^ 2)) / X)
-CONST ACSECH(X) = LOG((1 / 2) + SQRT((1 / (X ^ 2)) + 1))
+CONST FN ASINH(X) = LOG(X + SQRT(X * X + 1))
+CONST FN ACOSH(X) = LOG(X + SQRT(X * X - 1))
+CONST FN ATANH(X) = LOG((1 + X) / (1 - X)) / 2
+CONST FN ACOTH(X) = LOG((X + 1) / (X - 1)) / 2
+CONST FN ASECH(X) = LOG((1 + SQRT(1 - X ^ 2)) / X)
+CONST FN ACSECH(X) = LOG((1 / 2) + SQRT((1 / (X ^ 2)) + 1))
 
-CONST HYPOT(X, Y) = SQRT(X ^ 2 + Y ^ 2)
-CONST FAC(X) = X == 0 ? 1 : X * FAC(X - 1)
-CONST FIB(X) = X == 0 ? 0 : X < 3 ? 1 : FIB(X - 1) + FIB(X - 2)
+CONST FN HYPOT(X, Y) = SQRT(X ^ 2 + Y ^ 2)
+CONST FN FAC(X) = X == 0 ? 1 : X * FAC(X - 1)
+CONST FN FIB(X) = X == 0 ? 0 : X < 3 ? 1 : FIB(X - 1) + FIB(X - 2)
 `;
 
-export const MATHLIB_STATEMENTS = MATHLIB.trim().replace(/\n+/g, ';');
+export const MATHLIB_STATEMENTS = MATHLIB;
 
 export const MATHLIB_BUILTINS = new Map([
     ['SIN', __builtin__(Math.sin)],

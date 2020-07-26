@@ -39,6 +39,7 @@ export enum TokenType {
 
     // keywords
     CONST,
+    FN,
     FALSE,
     TRUE,
 
