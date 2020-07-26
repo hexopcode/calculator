@@ -1,0 +1,18 @@
+# TRIGONOMETRIC FUNCTIONS
+CONST FN COT(X) = 1 / TAN(X)
+CONST FN SEC(X) = 1 / COS(X)
+CONST FN CSEC(X) = 1 / SIN(X)
+
+CONST FN SINH(X) = (1 - EXP(-2 * X)) / (2 * EXP(-X))
+CONST FN COSH(X) = (1 + EXP(-2 * X)) / (2 * EXP(-X))
+CONST FN TANH(X) = (EXP(2 * X) - 1) / (EXP(2 * X) + 1)
+CONST FN COTH(X) = (EXP(2 * X) + 1) / (EXP(2 * X) - 1)
+CONST FN SECH(X) = (2 * EXP(X)) / (EXP(2 * X) + 1)
+CONST FN CSECH(X) = (2 * EXP(X)) / (EXP(2 * X) - 1)
+
+CONST FN ASINH(X) = LOG(X + SQRT(X * X + 1))
+CONST FN ACOSH(X) = LOG(X + SQRT(X * X - 1))
+CONST FN ATANH(X) = LOG((1 + X) / (1 - X)) / 2
+CONST FN ACOTH(X) = LOG((X + 1) / (X - 1)) / 2
+CONST FN ASECH(X) = LOG((1 + SQRT(1 - X ^ 2)) / X)
+CONST FN ACSECH(X) = LOG((1 / 2) + SQRT((1 / (X ^ 2)) + 1))

@@ -6,7 +6,7 @@ import {Environment} from './environment';
 import {ExpressionEvaluator} from './expressionevaluator';
 import {Expr, BinaryExpr, CallExpr, FunctionExpr, GroupingExpr, LiteralExpr, LogicalExpr, ReferenceExpr, TernaryExpr, UnaryExpr, VariableExpr, ExprVisitor} from './parser/expr';
 import {FunctionCallable} from './callables/function';
-import {MATHLIB_BUILTINS, MATHLIB_STATEMENTS} from './mathlib';
+import {MATHLIB_BUILTINS} from './mathlib';
 import {NativeCallable} from './callables/native';
 import {Parser} from './parser/parser';
 import {Scanner} from './parser/scanner';
@@ -20,7 +20,7 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
 
     async createEnvironment() {
         MATHLIB_BUILTINS.forEach((callable, name) => this.environment().defineConstant(name, new CallableValue(callable)));
-        await this.run(MATHLIB_STATEMENTS);
+        await this.run('IMPORT "MATHLIB/BOOTSTRAP.MATH"');
 
         if (this.errors.length > 0) {
             for (const e of this.errors) {

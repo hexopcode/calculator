@@ -1,0 +1,5 @@
+# ROOT FUNCTIONS
+CONST FN SQRT(X) = X ^ (1 / 2)
+FN ROOT(X, Y) = -(-X ^ (1 / Y)), X < 0
+FN ROOT(X, Y) = X ^ (1 / Y)
+FREEZE($ROOT)

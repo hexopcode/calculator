@@ -1,0 +1,3 @@
+# MAX/MIN FUNCTIONS
+CONST FN MAX(X, Y) = X > Y ? X : Y
+CONST FN MIN(X, Y) = X < Y ? X : Y
