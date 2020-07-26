@@ -28,7 +28,7 @@ export class AstPrinter implements ExprVisitor<string>, StmtVisitor<string> {
     }
 
     visitCallExpr(expr: CallExpr): string {
-        return this.parenthesize(`call ${expr.name.lexeme}`, ...expr.args);
+        return this.parenthesize('call', expr.callee, ...expr.args);
     }
 
     visitFunctionExpr(expr: FunctionExpr): string {

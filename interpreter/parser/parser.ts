@@ -218,22 +218,24 @@ export class Parser {
     }
 
     private call(): Expr {
-        const token: Token = this.peek();
-        const expr: Expr = this.primary();
+        let expr = this.primary();
 
-        if (token.type == TokenType.IDENTIFIER && this.match(TokenType.LEFT_PAREN)) {
-            const args: Expr[] = [];
-            if (!this.match(TokenType.RIGHT_PAREN)) {
-                do {
-                    args.push(this.expression());
-                } while (this.match(TokenType.COMMA));
+        while (this.match(TokenType.LEFT_PAREN)) {
+            expr = this.finishCall(expr);
+        }
+        return expr;
+    }
 
-                this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after arguments');
-            }
-            return new CallExpr(token, args);
+    private finishCall(callee: Expr) {
+        const args: Expr[] = [];
+        if (!this.check(TokenType.RIGHT_PAREN)) {
+            do {
+                args.push(this.expression());
+            } while (this.match(TokenType.COMMA));
         }
 
-        return expr;
+        this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after arguments');
+        return new CallExpr(callee, args);
     }
 
     private primary(): Expr {

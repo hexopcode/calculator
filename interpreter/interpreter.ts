@@ -164,13 +164,7 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<a
     }
 
     visitCallExpr(expr: CallExpr): Value<any> {
-        const name = expr.name.lexeme;
-        if (!this.environment().isDefined(name)) {
-            return this.interpreterError(`Function "${name}" does not exist`);
-        }
-
-        const ref = this.environment().get(name);
-        const fn: Callable = ref.assertCallable();
+        const fn: Callable = this.evaluate(expr.callee).assertCallable();
         const arity = fn.arity();
         const args = expr.args;
 

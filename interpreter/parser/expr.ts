@@ -37,11 +37,11 @@ export class TernaryExpr implements Expr {
 }
 
 export class CallExpr implements Expr {
-    readonly name: Token;
+    readonly callee: Expr;
     readonly args: Expr[];
 
-    constructor(name: Token, args: Expr[]) {
-        this.name = name;
+    constructor(callee: Expr, args: Expr[]) {
+        this.callee = callee;
         this.args = args;
     }
 
