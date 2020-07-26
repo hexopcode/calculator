@@ -25,6 +25,12 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Value<a
     createEnvironment() {
         MATHLIB_BUILTINS.forEach((callable, name) => this.environment().defineConstant(name, new CallableValue(callable)));
         this.run(MATHLIB_STATEMENTS);
+
+        if (this.errors.length > 0) {
+            for (const e of this.errors) {
+                console.error(e);
+            }
+        }
     }
 
     environment(): Environment {
