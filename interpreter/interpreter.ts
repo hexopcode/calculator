@@ -1,12 +1,12 @@
 import {AstPrinter} from './astprinter';
 import {BooleanValue, CallableValue, NumberValue, ReferenceValue, StringValue} from './values/typed';
+import {BUILTINS} from './builtins';
 import {CALL_ASSERT_FALSE} from './passes/partialcallables';
 import {Callable} from './callables/callable';
 import {Environment} from './environment';
 import {ExpressionEvaluator} from './expressionevaluator';
 import {Expr, BinaryExpr, CallExpr, FunctionExpr, GroupingExpr, LiteralExpr, LogicalExpr, ReferenceExpr, TernaryExpr, UnaryExpr, VariableExpr, ExprVisitor} from './parser/expr';
 import {FunctionCallable} from './callables/function';
-import {MATHLIB_BUILTINS} from './mathlib';
 import {NativeCallable} from './callables/native';
 import {Parser} from './parser/parser';
 import {Scanner} from './parser/scanner';
@@ -19,7 +19,7 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
     private errors: string[] = [];
 
     async createEnvironment() {
-        MATHLIB_BUILTINS.forEach((callable, name) => this.environment().defineConstant(name, new CallableValue(callable)));
+        BUILTINS.forEach((callable, name) => this.environment().defineConstant(name, new CallableValue(callable)));
         await this.run('IMPORT "MATHLIB/BOOTSTRAP.MATH"');
 
         if (this.errors.length > 0) {

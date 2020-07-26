@@ -3,7 +3,7 @@ import {Environment} from './environment';
 import {NumberValue, StringValue, BooleanValue} from './values/typed';
 import {Value} from './values/value';
 
-export const MATHLIB_BUILTINS = new Map([
+export const BUILTINS = new Map([
     ['SIN', __builtin__(Math.sin)],
     ['COS', __builtin__(Math.cos)],
     ['TAN', __builtin__(Math.tan)],
