@@ -17,7 +17,7 @@ export class Calc extends React.Component {
 
     async componentDidMount() {
         const interpreterResult = await this.interpreter.createEnvironment();
-        this.renderInterpreterResult(interpreterResult);
+        this.renderInterpreterResult(interpreterResult, false);
     }
 
     render() {
@@ -29,10 +29,10 @@ export class Calc extends React.Component {
         );
     }
 
-    renderInterpreterResult(interpreterResult: InterpreterResult) {
+    renderInterpreterResult(interpreterResult: InterpreterResult, renderResults: boolean = true) {
         const errors = interpreterResult.errors.map(e => e.toString());
         const statements = interpreterResult.statements.map(stmt => new AstPrinter().print(stmt));
-        const results = interpreterResult.results.map(r => r.toString());
+        const results = renderResults ? interpreterResult.results.map(r => r.toString()) : [];
 
         this.screenRef.current.addLines(...errors, ...statements, ...results);
     }
