@@ -1,9 +1,9 @@
 import * as React from 'react';
 
+import {AstPrinter} from '../interpreter/astprinter';
 import {Input} from './input';
+import {Interpreter, InterpreterResult} from '../interpreter/interpreter';
 import {Screen} from './screen';
-
-import {Interpreter} from '../interpreter/interpreter';
 
 type CalcProps = {};
 
@@ -16,7 +16,8 @@ export class Calc extends React.Component {
     }
 
     async componentDidMount() {
-        await this.interpreter.createEnvironment();
+        const interpreterResult = await this.interpreter.createEnvironment();
+        this.renderInterpreterResult(interpreterResult);
     }
 
     render() {
@@ -28,8 +29,16 @@ export class Calc extends React.Component {
         );
     }
 
+    renderInterpreterResult(interpreterResult: InterpreterResult) {
+        const errors = interpreterResult.errors.map(e => e.toString());
+        const statements = interpreterResult.statements.map(stmt => new AstPrinter().print(stmt));
+        const results = interpreterResult.results.map(r => r.toString());
+
+        this.screenRef.current.addLines(...errors, ...statements, ...results);
+    }
+
     async handleInput(text: string) {
-        const result: string[] = await this.interpreter.run(text);
-        this.screenRef.current.addLines(...result);
+        const interpreterResult = await this.interpreter.run(text);
+        this.renderInterpreterResult(interpreterResult);
     }
 }

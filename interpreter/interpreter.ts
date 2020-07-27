@@ -1,5 +1,4 @@
-import {AstPrinter} from './astprinter';
-import {BooleanValue, CallableValue, NumberValue, ReferenceValue, StringValue} from './values/typed';
+import {BooleanValue, CallableValue, ErrorValue, NumberValue, ReferenceValue, StringValue} from './values/typed';
 import {BUILTINS} from './builtins';
 import {CALL_ASSERT_FALSE} from './passes/partialcallables';
 import {Callable} from './callables/callable';
@@ -14,63 +13,57 @@ import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, ImportStmt, StmtVisitor
 import {Token, TokenType} from './parser/token';
 import {Value} from './values/value';
 
+export class InterpreterResult {
+    readonly statements: Stmt[] = [];
+    readonly results: Value<any>[] = [];
+    readonly errors: ErrorValue[] = [];
+};
+
 export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise<Value<any>>>, ExpressionEvaluator {
     private environments: Environment[] = [new Environment()];
-    private errors: string[] = [];
+
+    constructor() {
+        BUILTINS.forEach((callable, name) => this.environment().defineConstant(name, new CallableValue(callable)));
+    }
 
     async createEnvironment() {
-        BUILTINS.forEach((callable, name) => this.environment().defineConstant(name, new CallableValue(callable)));
-        await this.run('IMPORT "MATHLIB/BOOTSTRAP.MATH"');
-
-        if (this.errors.length > 0) {
-            for (const e of this.errors) {
-                console.error(e);
-            }
-        }
+        return await this.run('IMPORT "MATHLIB/BOOTSTRAP.MATH"');
     }
 
     environment(): Environment {
         return this.environments[this.environments.length - 1];
     }
 
-    async run(source: string): Promise<string[]> {
-        this.errors = [];
+    async run(source: string): Promise<InterpreterResult> {
+        const result = new InterpreterResult();
 
-        const scanner = new Scanner(source, this.scannerError.bind(this));
+        const scanner = new Scanner(source, this.scannerError.bind(this, result));
         const tokens = scanner.scanTokens();
 
-        if (this.errors.length > 0) {
-            return this.errors;
+        if (result.errors.length > 0) {
+            return result;
         }
 
-        const parser = new Parser(tokens, this.parserError.bind(this));
+        const parser = new Parser(tokens, this.parserError.bind(this, result));
         const statements : Stmt[] = parser.parse();
+        result.statements.push(...statements);
 
-        if (this.errors.length > 0) {
-            return this.errors;
+        if (result.errors.length > 0) {
+            return result;
         }
-
-        const results: string[] = [];
-
-        const astPrinter = new AstPrinter();
-        statements.forEach((stmt) => results.push(astPrinter.print(stmt)));
 
         try {
             for (const statement of statements) {
                 const ret = await this.execute(statement);
                 if (ret !== null) {
-                    results.push(ret.toString());
+                    result.results.push(ret);
                 }
             }
         } catch (e) {
-            this.interpreterError(e);
+            result.errors.push(new ErrorValue(e));
         }
 
-        if (this.errors.length > 0) {
-            return results.concat(this.errors);
-        }
-        
-        return results;
+        return result;
     }
 
     evaluateWithEnvironment(expr: Expr, env: Environment): Value<any> {
@@ -100,7 +93,7 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
                     const callable = value.assertCallable();
 
                     if (parentCallable instanceof NativeCallable) {
-                        return this.interpreterError('Cannot add partial function to native functions');
+                        throw this.interpreterError('Cannot add partial function to native functions');
                     }
 
                     if (callable instanceof FunctionCallable) {
@@ -161,7 +154,7 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
             case TokenType.LESS_EQUAL:
                 return new BooleanValue(left.assertNumber() <= right.assertNumber());
             default:
-                return this.unimplementedOperator(expr.operator.type);
+                throw this.unimplementedOperator(expr.operator.type);
         }
     }
 
@@ -179,7 +172,7 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
         if (args.length >= arity[0] && (arity.length == 1 || args.length <= arity[1])) {
             return fn.call(args.map(arg => this.evaluate(arg)), this);
         }
-        return this.interpreterError(`Invalid number of arguments passed to function ${name}`);
+        throw this.interpreterError(`Invalid number of arguments passed to function ${name}`);
     }
 
     visitFunctionExpr(expr: FunctionExpr): Value<any> {
@@ -204,7 +197,7 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
             case 'string':
                 return new StringValue(expr.value);
             default:
-                return this.interpreterError(`Type ${typeof expr.value} not supported in literals`);
+                throw this.interpreterError(`Type ${typeof expr.value} not supported in literals`);
         }
     }
 
@@ -217,7 +210,7 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
             case TokenType.AND_AND:
                 return new BooleanValue(left && this.evaluate(expr.right).assertBoolean());
             default:
-                return this.unimplementedOperator(expr.operator.type);
+                throw this.unimplementedOperator(expr.operator.type);
         }
     }
 
@@ -236,7 +229,7 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
             case TokenType.PIPE:
                 return new NumberValue(Math.abs(right.assertNumber()));
             default:
-                return this.unimplementedOperator(expr.operator.type);
+                throw this.unimplementedOperator(expr.operator.type);
         }
     }
 
@@ -248,22 +241,20 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
         return expr.accept(this);
     }
 
-    private unimplementedOperator(type: TokenType): null {
+    private unimplementedOperator(type: TokenType): Error {
         const typeStr = TokenType[type];
-        this.interpreterError(`unimplemented token ${typeStr}`);
-        return null;
+        return this.interpreterError(`Unimplemented operator ${typeStr}`);
     }
 
-    private scannerError(position: number, message: string) {
-        this.errors.push(`Error @ ${position}: ${message}`);
+    private scannerError(result: InterpreterResult, position: number, message: string) {
+        result.errors.push(new ErrorValue(new Error(`Error @ ${position}: ${message}`)));
     }
 
-    private parserError(token: Token, message: string) {
-        this.errors.push(`Error @ ${token.lexeme}: ${message}`);
+    private parserError(result: InterpreterResult, token: Token, message: string) {
+        result.errors.push(new ErrorValue(new Error(`Error @ ${token.lexeme}: ${message}`)));
     }
 
-    private interpreterError(message: string): null {
-        this.errors.push(`Interpreter error: ${message}`);
-        return null;
+    private interpreterError(message: string): Error {
+        return new Error(`Interpreter error: ${message}`);
     }
 }

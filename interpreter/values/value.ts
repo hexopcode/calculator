@@ -33,6 +33,10 @@ export abstract class Value<T> {
         return this.typeError('reference');
     }
 
+    assertError(): T {
+        return this.typeError('error');
+    }
+
     assertSameAs(other: Value<any>): void {
         const thisType = this.constructor;
         const otherType = other.constructor;

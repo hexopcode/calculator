@@ -62,3 +62,13 @@ export class ReferenceValue extends Value<string> {
         return `$${this.value()}`;
     }
 }
+
+export class ErrorValue extends Value<Error> {
+    assertError(): Error {
+        return this.value();
+    }
+
+    type(): string {
+        return 'ERR';
+    }
+}
