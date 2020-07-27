@@ -1,3 +1,4 @@
+import {AnyValue, Value} from './values/value';
 import {BooleanValue, CallableValue, ErrorValue, NumberValue, ReferenceValue, StringValue} from './values/typed';
 import {BUILTINS} from './builtins';
 import {CALL_ASSERT_FALSE} from './passes/partialcallables';
@@ -11,7 +12,6 @@ import {Parser} from './parser/parser';
 import {Scanner} from './parser/scanner';
 import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, ImportStmt, StmtVisitor} from './parser/stmt';
 import {Token, TokenType} from './parser/token';
-import {Value} from './values/value';
 
 export class InterpreterResult {
     readonly statements: Stmt[] = [];
@@ -55,7 +55,13 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
         try {
             for (const statement of statements) {
                 const ret = await this.execute(statement);
-                if (ret !== null) {
+                if (ret instanceof AnyValue) {
+                    const childResult = ret.value() as InterpreterResult;
+
+                    result.statements.push(...childResult.statements);
+                    result.results.push(...childResult.results);
+                    result.errors.push(...childResult.errors);
+                } else {
                     result.results.push(ret);
                 }
             }
@@ -116,8 +122,8 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
 
     async visitImportStmt(stmt: ImportStmt): Promise<Value<any>> {
         const source = await fetch(`${stmt.path.literal}`).then(response => response.text());
-        await this.run(source);
-        return null;
+        const result = await this.run(source);
+        return new AnyValue(result);
     }
 
     visitBinaryExpr(expr: BinaryExpr): Value<any> {

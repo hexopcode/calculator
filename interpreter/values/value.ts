@@ -53,3 +53,9 @@ export abstract class Value<T> {
         return this.internal.toString();
     }
 }
+
+export class AnyValue extends Value<any> {
+    type(): string {
+        return 'ANY';
+    }
+}
