@@ -6,6 +6,8 @@ type ScreenState = {
 };
 
 export class Screen extends React.Component<ScreenProps, ScreenState> {
+    private screenRef = React.createRef<HTMLDivElement>();
+
     state: ScreenState = {
         lines: new Array<string>(),
     };
@@ -14,9 +16,13 @@ export class Screen extends React.Component<ScreenProps, ScreenState> {
         super(props);
     }
 
+    componentDidUpdate() {
+        this.screenRef.current.scrollTop = this.screenRef.current.scrollHeight;
+    }
+
     render() {
         return (
-            <div id="screen">
+            <div id="screen" ref={this.screenRef}>
                 {this.state.lines.map((line, idx) => (
                     <div key={idx}>{line}</div>
                 ))}
