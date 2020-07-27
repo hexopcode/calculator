@@ -53,4 +53,5 @@ export const BUILTINS = new Map([
     })],
 
     ['NUM', __raw_builtin__((arg: Value<any>): NumberValue => new NumberValue(Number(arg.value())))],
+    ['STR', __raw_builtin__((arg: Value<any>): StringValue => new StringValue(arg.toString().toUpperCase()))],
 ]);
