@@ -21,7 +21,7 @@ export abstract class NativeCallable extends Callable {
     }
 
     toString(): string {
-        return '<native>';
+        return '<NATIVE FN>';
     }
 }
 

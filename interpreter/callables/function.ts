@@ -29,7 +29,7 @@ export class FunctionCallable extends Callable {
     }
 
     toString(): string {
-        return '<custom fn>';
+        return '<CUSTOM FN>';
     }
 
     concat(callable: FunctionCallable) {
