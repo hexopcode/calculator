@@ -19,8 +19,11 @@ export class InterpreterResult {
     readonly errors: ErrorValue[] = [];
 };
 
+const EMPTY_INTERPRETER_RESULT = new InterpreterResult();
+
 export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise<Value<any>>>, ExpressionEvaluator {
     private environments: Environment[] = [new Environment()];
+    private importedLibraries: Set<string> = new Set();
 
     constructor() {
         BUILTINS.forEach((callable, name) => this.environment().defineConstant(name, new CallableValue(callable)));
@@ -125,8 +128,15 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
     }
 
     async visitImportStmt(stmt: ImportStmt): Promise<Value<any>> {
-        const source = await fetch(`${stmt.path.literal}`).then(response => response.text());
+        const path = stmt.path.literal;
+        if (this.importedLibraries.has(path)) {
+            return new AnyValue(EMPTY_INTERPRETER_RESULT);
+        }
+
+        this.importedLibraries.add(path);
+        const source = await fetch(path).then(response => response.text());
         const result = await this.run(source);
+
         return new AnyValue(result);
     }
 
