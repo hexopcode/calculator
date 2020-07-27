@@ -61,6 +61,10 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
                     result.statements.push(...childResult.statements);
                     result.results.push(...childResult.results);
                     result.errors.push(...childResult.errors);
+
+                    if (childResult.errors.length > 0) {
+                        break;
+                    }
                 } else {
                     result.results.push(ret);
                 }
