@@ -3,10 +3,9 @@ import * as React from 'react';
 import {AstPrinter} from '../interpreter/astprinter';
 import {ErrorValue} from '../interpreter/values/typed';
 import {Input} from './input';
-import {Interpreter, InterpreterResult, InterpreterResultType} from '../interpreter/interpreter';
+import {Interpreter, InterpreterResult} from '../interpreter/interpreter';
 import {Screen} from './screen';
-import {Stmt} from '../interpreter/parser/stmt';
-
+import {Value} from '../interpreter/values/value';
 
 type CalcProps = {};
 
@@ -33,16 +32,10 @@ export class Calc extends React.Component {
     }
 
     updateInterpreterResult(interpreterResult: InterpreterResult, includeResults: boolean = true) {
-        const lines = interpreterResult.all.map((result: InterpreterResultType) => {
-            if (result instanceof ErrorValue) {
-                return result.toString();
-            } else if ((result as Stmt).accept) {
-                return new AstPrinter().print(result as Stmt);
-            } else {
-                return includeResults ? result.toString() : null
-            }
-        }).filter(result => result !== null);
-
+        const lines = interpreterResult.all.filter(result => {
+            const isResult = result instanceof Value && !(result instanceof ErrorValue);
+            return !isResult || includeResults;
+        });
         this.screenRef.current.addLines(...lines);
     }
 
