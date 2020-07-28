@@ -13,10 +13,11 @@ import {Scanner} from './parser/scanner';
 import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, ImportStmt, StmtVisitor} from './parser/stmt';
 import {Token, TokenType} from './parser/token';
 
+export type InterpreterResultType = (Stmt|Value<any>|ErrorValue);
+
 export class InterpreterResult {
-    readonly statements: Stmt[] = [];
-    readonly results: Value<any>[] = [];
-    readonly errors: ErrorValue[] = [];
+    /* mutable */ hasError: boolean = false;
+    readonly all: InterpreterResultType[] = [];
 };
 
 const EMPTY_INTERPRETER_RESULT = new InterpreterResult();
@@ -43,15 +44,15 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
         const scanner = new Scanner(source, this.scannerError.bind(this, result));
         const tokens = scanner.scanTokens();
 
-        if (result.errors.length > 0) {
+        if (result.hasError) {
             return result;
         }
 
         const parser = new Parser(tokens, this.parserError.bind(this, result));
         const statements : Stmt[] = parser.parse();
-        result.statements.push(...statements);
+        result.all.push(...statements);
 
-        if (result.errors.length > 0) {
+        if (result.hasError) {
             return result;
         }
 
@@ -61,19 +62,18 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
                 if (ret instanceof AnyValue) {
                     const childResult = ret.value() as InterpreterResult;
 
-                    result.statements.push(...childResult.statements);
-                    result.results.push(...childResult.results);
-                    result.errors.push(...childResult.errors);
-
-                    if (childResult.errors.length > 0) {
+                    result.all.push(...childResult.all);
+                    if (childResult.hasError) {
+                        result.hasError = true;
                         break;
                     }
                 } else {
-                    result.results.push(ret);
+                    result.all.push(ret);
                 }
             }
         } catch (e) {
-            result.errors.push(new ErrorValue(e));
+            result.hasError = true;
+            result.all.push(new ErrorValue(e));
         }
 
         return result;
@@ -267,11 +267,13 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
     }
 
     private scannerError(result: InterpreterResult, position: number, message: string) {
-        result.errors.push(new ErrorValue(new Error(`Error @ ${position}: ${message}`)));
+        result.hasError = true;
+        result.all.push(new ErrorValue(new Error(`Error @ ${position}: ${message}`)));
     }
 
     private parserError(result: InterpreterResult, token: Token, message: string) {
-        result.errors.push(new ErrorValue(new Error(`Error @ ${token.lexeme}: ${message}`)));
+        result.hasError = true;
+        result.all.push(new ErrorValue(new Error(`Error @ ${token.lexeme}: ${message}`)));
     }
 
     private interpreterError(message: string): Error {

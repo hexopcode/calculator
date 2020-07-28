@@ -1,9 +1,13 @@
 import * as React from 'react';
 
 import {AstPrinter} from '../interpreter/astprinter';
+import {ErrorValue} from '../interpreter/values/typed';
 import {Input} from './input';
-import {Interpreter, InterpreterResult} from '../interpreter/interpreter';
+import {Interpreter, InterpreterResult, InterpreterResultType} from '../interpreter/interpreter';
 import {Screen} from './screen';
+import {Stmt} from '../interpreter/parser/stmt';
+import {Value} from '../interpreter/values/value';
+
 
 type CalcProps = {};
 
@@ -30,11 +34,17 @@ export class Calc extends React.Component {
     }
 
     renderInterpreterResult(interpreterResult: InterpreterResult, renderResults: boolean = true) {
-        const errors = interpreterResult.errors.map(e => e.toString());
-        const statements = interpreterResult.statements.map(stmt => new AstPrinter().print(stmt));
-        const results = renderResults ? interpreterResult.results.map(r => r.toString()) : [];
+        const lines = interpreterResult.all.map((result: InterpreterResultType) => {
+            if (result instanceof ErrorValue) {
+                return result.toString();
+            } else if ((result as Stmt).accept) {
+                return new AstPrinter().print(result as Stmt);
+            } else {
+                return renderResults ? result.toString() : null
+            }
+        }).filter(result => result !== null);
 
-        this.screenRef.current.addLines(...errors, ...statements, ...results);
+        this.screenRef.current.addLines(...lines);
     }
 
     async handleInput(text: string) {
