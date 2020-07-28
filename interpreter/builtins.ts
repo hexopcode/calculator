@@ -26,7 +26,7 @@ export const BUILTINS = new Map([
                 arg2.assertString();
             throw new Error(message);
         }
-        return true;
+        return new BooleanValue(true);
     }, 1, 2)],
 
     ['TYPE', __raw_builtin__((arg: Value<any>): StringValue => new StringValue(arg.type()))],
