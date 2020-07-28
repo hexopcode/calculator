@@ -1,9 +1,28 @@
 import * as React from 'react';
 
-import {AstPrinter} from '../interpreter/astprinter';
+import {AstLine} from './astline';
 import {InterpreterResultType} from '../interpreter/interpreter';
+import {ErrorLine} from './errorline';
+import {ErrorValue} from '../interpreter/values/typed';
+import {ResultLine} from './resultline';
 import {Stmt} from '../interpreter/parser/stmt';
 import {Value} from '../interpreter/values/value';
+
+enum RenderResultType {
+    AST,
+    ERROR,
+    RESULT,
+};
+
+function renderResultType(result: InterpreterResultType): RenderResultType {
+    if (result instanceof ErrorValue) {
+        return RenderResultType.ERROR;
+    } else if (result instanceof Value) {
+        return RenderResultType.RESULT;
+    } else {
+        return RenderResultType.AST;
+    }
+}
 
 type ScreenProps = {};
 type ScreenState = {
@@ -25,20 +44,21 @@ export class Screen extends React.Component<ScreenProps, ScreenState> {
         this.screenRef.current.scrollTop = this.screenRef.current.scrollHeight;
     }
 
-    renderResultType(result: InterpreterResultType): string {
-        if (result instanceof Value) {
-            return result.toString();
-        } else {
-            return new AstPrinter().print(result as Stmt);
-        }
-    }
-
     render() {
         return (
             <div id="screen" ref={this.screenRef}>
-                {this.state.lines.map((line, idx) => (
-                    <div key={idx}>{this.renderResultType(line)}</div>
-                ))}
+                {this.state.lines.map((line, idx) => {
+                    switch (renderResultType(line)) {
+                        case RenderResultType.ERROR:
+                            return <ErrorLine key={idx} error={line as ErrorValue} />;
+                        case RenderResultType.AST:
+                            return <AstLine key={idx} ast={line as Stmt} />;
+                        case RenderResultType.RESULT:
+                            return <ResultLine key={idx} result={line as Value<any>} />;
+                        default:
+                            throw new Error('Unimplemented');
+                    }
+                })}
             </div>
         );
     }
