@@ -4,6 +4,20 @@ export interface Expr {
     accept<T>(visitor: ExprVisitor<T>): T;
 }
 
+export class AssignExpr implements Expr {
+    readonly name: Token;
+    readonly value: Expr;
+
+    constructor(name: Token, value: Expr) {
+        this.name = name;
+        this.value = value;
+    }
+
+    accept<T>(visitor: ExprVisitor<T>): T {
+        return visitor.visitAssignExpr(this);
+    }
+}
+
 export class BinaryExpr implements Expr {
     readonly left: Expr;
     readonly operator: Token;
@@ -145,6 +159,7 @@ export class VariableExpr implements Expr {
 }
 
 export interface ExprVisitor<T> {
+    visitAssignExpr(expr: AssignExpr): T;
     visitBinaryExpr(expr: BinaryExpr): T;
     visitTernaryExpr(expr: TernaryExpr): T;
     visitCallExpr(expr: CallExpr): T;

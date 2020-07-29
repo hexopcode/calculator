@@ -1,5 +1,5 @@
 import {ParserErrorReporter} from '../common/errorreporter';
-import {Expr, BinaryExpr, FunctionExpr, GroupingExpr, LiteralExpr, ReferenceExpr, TernaryExpr, UnaryExpr, VariableExpr, CallExpr, LogicalExpr} from './expr';
+import {Expr, BinaryExpr, FunctionExpr, GroupingExpr, LiteralExpr, ReferenceExpr, TernaryExpr, UnaryExpr, VariableExpr, CallExpr, LogicalExpr, AssignExpr} from './expr';
 import {Token, TokenType} from './token';
 import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, ImportStmt} from './stmt';
 
@@ -106,7 +106,23 @@ export class Parser {
     }
 
     private expression(): Expr {
-        return this.ternary();
+        return this.assignment();
+    }
+
+    private assignment(): Expr {
+        const expr = this.ternary();
+
+        if (this.match(TokenType.EQUAL)) {
+            const equals = this.previous();
+            const value = this.assignment();
+
+            if (expr instanceof VariableExpr) {
+                return new AssignExpr(expr.name, value);
+            }
+            throw this.error(equals, 'Invalid assignment target');
+        }
+
+        return expr;
     }
 
     private ternary(): Expr {
@@ -149,7 +165,7 @@ export class Parser {
     private equality(): Expr {
         let expr = this.comparison();
 
-        while (this.match(TokenType.EQUAL, TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
+        while (this.match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
             const operator = this.previous();
             const right = this.comparison();
             expr = new BinaryExpr(expr, operator, right);
