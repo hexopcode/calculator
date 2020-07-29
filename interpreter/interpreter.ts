@@ -272,14 +272,14 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
         return this.interpreterError(`Unimplemented operator ${typeStr}`);
     }
 
-    private scannerError(result: InterpreterResult, position: number, message: string) {
+    private scannerError(result: InterpreterResult, line: number, column: number, message: string) {
         result.hasError = true;
-        result.all.push(new ErrorValue(new Error(`Error @ ${position}: ${message}`)));
+        result.all.push(new ErrorValue(new Error(`Tokenizer error @ ${line}:${column}: ${message}`)));
     }
 
     private parserError(result: InterpreterResult, token: Token, message: string) {
         result.hasError = true;
-        result.all.push(new ErrorValue(new Error(`Error @ ${token.lexeme}: ${message}`)));
+        result.all.push(new ErrorValue(new Error(`Parser error @ ${token.line}:${token.column}: ${message}`)));
     }
 
     private interpreterError(message: string): Error {

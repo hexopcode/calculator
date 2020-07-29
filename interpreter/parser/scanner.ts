@@ -15,10 +15,12 @@ export class Scanner {
     private tokens: Token[] = [];
     private start: number = 0;
     private current: number = 0;
+    private line: number = 0;
+    private column: number = 0;
 
     constructor(expression: string, errorReporter: ScannerErrorReporter) {
         this.expression = expression;
-        this.errorReporter = (message: string) => errorReporter(this.current - 1, message);
+        this.errorReporter = (message: string) => errorReporter(this.line + 1, this.column + 1, message);
     }
 
     scanTokens(): Token[] {
@@ -27,7 +29,7 @@ export class Scanner {
             this.scanToken();
         }
 
-        this.tokens.push(new Token(TokenType.EOF, '', null));
+        this.tokens.push(new Token(TokenType.EOF, '', null, this.line + 1, this.column + 1));
         return this.tokens;
     }
 
@@ -111,19 +113,22 @@ export class Scanner {
                 if (this.match('&')) {
                     this.addToken(TokenType.AND_AND);
                 } else {
-                    this.errorReporter('Unexpected character');
+                    this.errorReporter(`Unexpected character: ${c}`);
                 }
                 break;
             case '$':
                 if (this.isAlpha(this.peek())) {
                     this.addToken(TokenType.DOLLAR);
                 } else {
-                    this.errorReporter('Unexpected character');
+                    this.errorReporter(`Unexpected character: ${c}`);
                 }
             case ' ':
             case '\r':
-            case '\n':
             case '\t':
+                break;
+            case '\n':
+                this.column = 0;
+                this.line++;
                 break;
             case '"':
                 this.string();
@@ -134,7 +139,7 @@ export class Scanner {
                 } else if (this.isAlpha(c)) {
                     this.identifier();
                 } else {
-                    this.errorReporter('Unexpected character');
+                    this.errorReporter(`Unexpected character: ${c}`);
                 }
                 break;
         }
@@ -142,12 +147,13 @@ export class Scanner {
 
     private advance(): string {
         this.current++;
+        this.column++;
         return this.expression.charAt(this.current - 1);
     }
 
     private addToken(type: TokenType, literal: any = null) {
         const text = this.expression.substring(this.start, this.current);
-        this.tokens.push(new Token(type, text, literal));
+        this.tokens.push(new Token(type, text, literal, this.line + 1, this.column + 1));
     }
 
     private match(expected: string): boolean {
@@ -155,6 +161,7 @@ export class Scanner {
             return false;
         }
         this.current++;
+        this.column++;
         return true;
     }
 
