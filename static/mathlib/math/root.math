@@ -3,3 +3,8 @@ CONST FN SQRT(X) = X ^ (1 / 2)
 FN ROOT(X, Y) = -(-X ^ (1 / Y)), X < 0
 FN ROOT(X, Y) = X ^ (1 / Y)
 FREEZE($ROOT)
+
+# UNIT TESTS
+ASSERT(SQRT(4) == 2)
+ASSERT(ROOT(27, 3) == 3)
+ASSERT(ROOT(-27, 3) == -3)
