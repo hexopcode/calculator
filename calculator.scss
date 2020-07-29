@@ -1,8 +1,11 @@
+$calc-fg-color-primary: #333;
+$calc-fg-color-secondary: #396d91;
+
 $calc-font: 11pt monospace;
 $calc-color-bg: #6bafdb;
-$calc-color-fg: #333;
+$calc-color-fg: $calc-fg-color-primary;
 
-$calc-ast-color-fg: #396d91;
+$calc-ast-color-fg: $calc-fg-color-secondary;
 $calc-error-color-fg: #a00;
 
 body {
@@ -45,5 +48,12 @@ body {
 }
 
 #input {
-    border: none;
+    border-top: 1px solid $calc-fg-color-secondary;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+
+    &:focus {
+        outline: none;
+    }
 }
