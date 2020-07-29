@@ -11,6 +11,7 @@ $calc-error-color-fg: #a00;
 body {
     margin: 0;
     padding: 0;
+    overscroll-behavior: none;
 }
 
 #calc {
