@@ -1,17 +1,19 @@
 import * as React from 'react';
 
-import {AstPrinter} from '../interpreter/astprinter';
 import {ErrorValue} from '../interpreter/values/typed';
 import {Input} from './input';
-import {Interpreter, InterpreterResult} from '../interpreter/interpreter';
+import {Interpreter, InterpreterResult, InterpreterPragma, InterpreterPragmaAttributes} from '../interpreter/interpreter';
 import {Screen} from './screen';
 import {Value} from '../interpreter/values/value';
+import {Stmt} from '../interpreter/parser/stmt';
 
 type CalcProps = {};
 
 export class Calc extends React.Component {
     private screenRef = React.createRef<Screen>();
     private interpreter = new Interpreter();
+    private shouldRenderAst: boolean = true;
+    private shouldRenderResult: boolean = true;
 
     constructor(props: CalcProps) {
         super(props);
@@ -19,7 +21,26 @@ export class Calc extends React.Component {
 
     async componentDidMount() {
         const interpreterResult = await this.interpreter.createEnvironment();
-        this.updateInterpreterResult(interpreterResult, false);
+        this.updateInterpreterResult(interpreterResult);
+    }
+
+    handlePragma(pragma: InterpreterPragma) {
+        if (pragma.name !== 'OUTPUT') {
+            return;
+        }
+
+        pragma.attributes.forEach((value: (boolean|string|number), key: string) => {
+            switch (key) {
+                case 'AST':
+                    this.shouldRenderAst = value as boolean;
+                    break;
+                case 'RESULT':
+                    this.shouldRenderResult = value as boolean;
+                    break;
+                default:
+                    break;
+            }
+        });
     }
 
     render() {
@@ -31,10 +52,25 @@ export class Calc extends React.Component {
         );
     }
 
-    updateInterpreterResult(interpreterResult: InterpreterResult, includeResults: boolean = true) {
+    updateInterpreterResult(interpreterResult: InterpreterResult) {
         const lines = interpreterResult.all.filter(result => {
-            const isResult = result instanceof Value && !(result instanceof ErrorValue);
-            return !isResult || includeResults;
+            if (result instanceof InterpreterPragma) {
+                this.handlePragma(result);
+                return false;
+            }
+
+            const isAst = (result as Stmt).accept;
+            const isError = result instanceof ErrorValue;
+            const isResult = (result instanceof Value) && !isError;
+            
+            if (isAst && this.shouldRenderAst) {
+                return true;
+            } else if (isResult && this.shouldRenderResult) {
+                return true;
+            } else if (isError) {
+                return true;
+            }
+            return false;
         });
         this.screenRef.current.addLines(...lines);
     }

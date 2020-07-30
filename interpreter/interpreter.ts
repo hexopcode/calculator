@@ -10,7 +10,7 @@ import {FunctionCallable} from './callables/function';
 import {NativeCallable} from './callables/native';
 import {Parser} from './parser/parser';
 import {Scanner} from './parser/scanner';
-import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, ImportStmt, StmtVisitor} from './parser/stmt';
+import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, ImportStmt, PragmaStmt, StmtVisitor} from './parser/stmt';
 import {Token, TokenType} from './parser/token';
 
 export type InterpreterResultType = (Stmt|Value<any>|ErrorValue);
@@ -21,6 +21,18 @@ export class InterpreterResult {
 };
 
 const EMPTY_INTERPRETER_RESULT = new InterpreterResult();
+
+export type InterpreterPragmaAttributes = Map<string, (boolean|string|number)>;
+
+export class InterpreterPragma {
+    readonly name: string;
+    readonly attributes: InterpreterPragmaAttributes;
+
+    constructor(name: string, attributes: InterpreterPragmaAttributes) {
+        this.name = name;
+        this.attributes = attributes;
+    }
+}
 
 export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise<Value<any>>>, ExpressionEvaluator {
     private environments: Environment[] = [new Environment()];
@@ -50,31 +62,40 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
 
         const parser = new Parser(tokens, this.parserError.bind(this, result));
         const statements : Stmt[] = parser.parse();
-        result.all.push(...statements);
 
         if (result.hasError) {
+            result.all.push(...statements);
             return result;
         }
 
-        try {
-            for (const statement of statements) {
+        for (const statement of statements) {
+            try {
                 const ret = await this.execute(statement);
                 if (ret instanceof AnyValue) {
-                    const childResult = ret.value() as InterpreterResult;
-
-                    result.all.push(...childResult.all);
-                    if (childResult.hasError) {
-                        result.hasError = true;
-                        break;
+                    if (ret.value() instanceof InterpreterPragma) {
+                        result.all.push(ret.value());
+                        result.all.push(statement);
+                    } else {
+                        const childResult = ret.value() as InterpreterResult;
+                        result.all.push(statement);
+                        result.all.push(...childResult.all);
+                        if (childResult.hasError) {
+                            result.hasError = true;
+                            break;
+                        }
                     }
                 } else {
+                    result.all.push(statement);
                     result.all.push(ret);
                 }
+            } catch (e) {
+                result.hasError = true;
+                result.all.push(statement);
+                result.all.push(new ErrorValue(e));
+                break;
             }
-        } catch (e) {
-            result.hasError = true;
-            result.all.push(new ErrorValue(e));
         }
+        
 
         return result;
     }
@@ -138,6 +159,35 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
         const result = await this.run(source);
 
         return new AnyValue(result);
+    }
+
+    async visitPragmaStmt(stmt: PragmaStmt): Promise<Value<any>> {
+        const name = stmt.name.lexeme;
+        const attributes: InterpreterPragmaAttributes = new Map();
+
+        stmt.attributes.forEach((value: Token, key: Token) => {
+            const attr = key.lexeme;
+            let attrValue: (boolean|string|number);
+            switch (value.type) {
+                case TokenType.IDENTIFIER:
+                    attrValue = value.lexeme;
+                    break;
+                case TokenType.FALSE:
+                    attrValue = false;
+                    break;
+                case TokenType.TRUE:
+                    attrValue = true;
+                    break;
+                case TokenType.NUMBER:
+                    attrValue = value.literal as number;
+                    break;
+                default:
+                    throw this.interpreterError(`Invalid pragma attribute value: ${value.lexeme}`);
+            }
+            attributes.set(attr, attrValue);
+        });
+
+        return new AnyValue(new InterpreterPragma(name, attributes));
     }
 
     visitAssignExpr(expr: AssignExpr): Value<any> {

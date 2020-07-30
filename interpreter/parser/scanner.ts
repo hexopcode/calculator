@@ -41,8 +41,12 @@ export class Scanner {
         const c = this.advance();
         switch (c) {
             case '#':
-                while (!this.match('\n') && !this.isAtEnd()) {
-                    this.advance();
+                if (this.peek() == '[') {
+                    this.addToken(TokenType.POUND);
+                } else {
+                    while (!this.match('\n') && !this.isAtEnd()) {
+                        this.advance();
+                    }
                 }
                 break;
             case ':':

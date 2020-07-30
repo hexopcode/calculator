@@ -1,7 +1,7 @@
 import {ParserErrorReporter} from '../common/errorreporter';
 import {Expr, BinaryExpr, FunctionExpr, GroupingExpr, LiteralExpr, ReferenceExpr, TernaryExpr, UnaryExpr, VariableExpr, CallExpr, LogicalExpr, AssignExpr} from './expr';
 import {Token, TokenType} from './token';
-import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, ImportStmt} from './stmt';
+import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, ImportStmt, PragmaStmt} from './stmt';
 
 export class Parser {
     private tokens: Token[];
@@ -32,6 +32,9 @@ export class Parser {
         if (this.match(TokenType.IMPORT)) {
             return this.importDeclaration();
         }
+        if (this.match(TokenType.POUND)) {
+            return this.pragmaDeclaration();
+        }
         if (this.match(TokenType.CONST)) {
             return this.constantDeclaration();
         }
@@ -47,6 +50,37 @@ export class Parser {
     private importDeclaration(): Stmt {
         const path = this.consume(TokenType.STRING, "Expect path after import keyword");
         return new ImportStmt(path);
+    }
+
+    private pragmaDeclaration(): Stmt {
+        this.consume(TokenType.LEFT_SQUARE_BRACKET, 'Expect "[" after pragma');
+        const name = this.consume(TokenType.IDENTIFIER, 'Expect pragma name');
+        this.consume(TokenType.LEFT_PAREN, 'Expect "(" after pragma name');
+
+        const attributes = new Map<Token, Token>();
+        while (this.peek().type == TokenType.IDENTIFIER) {
+            const key = this.advance();
+            this.consume(TokenType.EQUAL, 'Expect "=" after pragma attribute name');
+            
+            const value = this.advance();
+            if (value.type === TokenType.IDENTIFIER ||
+                value.type === TokenType.NUMBER ||
+                value.type === TokenType.FALSE ||
+                value.type === TokenType.TRUE) {
+                attributes.set(key, value);
+            } else {
+                this.error(value, 'Expected identifier, number, false, or true after attribute name');
+            }
+
+            if (this.peek().type !== TokenType.RIGHT_PAREN) {
+                this.consume(TokenType.COMMA, 'Expect "," or ")" after pragma attribute');
+            }
+        }
+
+        this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after pragma attributes');
+        this.consume(TokenType.RIGHT_SQUARE_BRACKET, 'Expect "]" at the end of pragma');
+
+        return new PragmaStmt(name, attributes);
     }
 
     private constantDeclaration(): Stmt {

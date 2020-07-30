@@ -1,5 +1,5 @@
 import {Expr, AssignExpr, BinaryExpr, CallExpr, TernaryExpr, FunctionExpr, GroupingExpr, LiteralExpr, LogicalExpr, ReferenceExpr, UnaryExpr, VariableExpr, ExprVisitor} from './parser/expr';
-import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, ImportStmt, StmtVisitor} from './parser/stmt';
+import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, ImportStmt, PragmaStmt, StmtVisitor} from './parser/stmt';
 import {TokenType} from './parser/token';
 
 export class AstPrinter implements ExprVisitor<string>, StmtVisitor<string> {
@@ -21,6 +21,14 @@ export class AstPrinter implements ExprVisitor<string>, StmtVisitor<string> {
 
     visitImportStmt(stmt: ImportStmt): string {
         return this.parenthesize(`import ${stmt.path.literal}`);
+    }
+
+    visitPragmaStmt(stmt: PragmaStmt): string {
+        const pairs = [];
+        for (let attr of stmt.attributes.entries()) {
+            pairs.push(`${attr[0].lexeme}=${attr[1].lexeme}`);
+        }
+        return this.parenthesize(`pragma ${stmt.name.lexeme} ${pairs.join(' ')}`);
     }
 
     visitAssignExpr(expr: AssignExpr): string {

@@ -57,9 +57,24 @@ export class ImportStmt implements Stmt {
     }
 }
 
+export class PragmaStmt implements Stmt {
+    readonly name: Token;
+    readonly attributes: Map<Token, Token>;
+
+    constructor(name: Token, attributes: Map<Token, Token>) {
+        this.name = name;
+        this.attributes = attributes;
+    }
+
+    accept<T>(visitor: StmtVisitor<T>): T {
+        return visitor.visitPragmaStmt(this);
+    }
+}
+
 export interface StmtVisitor<T> {
     visitExpressionStmt(stmt: ExpressionStmt): T;
     visitAssignmentStmt(stmt: AssignmentStmt): T;
     visitConstStmt(stmt: ConstStmt): T;
     visitImportStmt(stmt: ImportStmt): T;
+    visitPragmaStmt(stmt: PragmaStmt): T;
 }
