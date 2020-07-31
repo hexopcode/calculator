@@ -1,5 +1,5 @@
 import {ParserErrorReporter} from '../common/errorreporter';
-import {Expr, BinaryExpr, FunctionExpr, GroupingExpr, LiteralExpr, ReferenceExpr, TernaryExpr, UnaryExpr, VariableExpr, CallExpr, LogicalExpr, AssignExpr} from './expr';
+import {Expr, BinaryExpr, FunctionExpr, GroupingExpr, LiteralExpr, ReferenceExpr, TernaryExpr, UnaryExpr, VariableExpr, CallExpr, LogicalExpr, AssignExpr, VectorExpr} from './expr';
 import {Token, TokenType} from './token';
 import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, ImportStmt, PragmaStmt} from './stmt';
 
@@ -307,6 +307,15 @@ export class Parser {
             const expr = this.expression();
             this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after expression');
             return new GroupingExpr(expr);
+        } else if (this.match(TokenType.LEFT_SQUARE_BRACKET)) {
+            const elements: Expr[] = [];
+            if (!this.check(TokenType.RIGHT_SQUARE_BRACKET)) {
+                do {
+                    elements.push(this.expression());
+                } while (this.match(TokenType.COMMA));
+            }
+            this.consume(TokenType.RIGHT_SQUARE_BRACKET, 'Expect "]" after elements');
+            return new VectorExpr(elements);
         }
         throw this.error(this.peek(), 'Expect expression');
     }

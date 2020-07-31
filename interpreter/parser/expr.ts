@@ -158,6 +158,18 @@ export class VariableExpr implements Expr {
     }
 }
 
+export class VectorExpr implements Expr {
+    readonly elements: Array<Expr>;
+
+    constructor(elements: Array<Expr>) {
+        this.elements = elements;
+    }
+
+    accept<T>(visitor: ExprVisitor<T>): T{
+        return visitor.visitVectorExpr(this);
+    }
+}
+
 export interface ExprVisitor<T> {
     visitAssignExpr(expr: AssignExpr): T;
     visitBinaryExpr(expr: BinaryExpr): T;
@@ -170,4 +182,5 @@ export interface ExprVisitor<T> {
     visitReferenceExpr(expr: ReferenceExpr): T;
     visitUnaryExpr(expr: UnaryExpr): T;
     visitVariableExpr(expr: VariableExpr): T;
+    visitVectorExpr(expr: VectorExpr): T;
 }

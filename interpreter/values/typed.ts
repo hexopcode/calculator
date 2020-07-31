@@ -72,3 +72,17 @@ export class ErrorValue extends Value<Error> {
         return 'ERR';
     }
 }
+
+export class VectorValue extends Value<Array<Value<any>>> {
+    assertVector(): Array<Value<any>> {
+        return this.value();
+    }
+
+    type(): string {
+        return 'VEC';
+    }
+
+    toString(): string {
+        return `[${this.value().join(', ')}]`;
+    }
+}

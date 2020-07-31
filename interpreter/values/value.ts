@@ -37,6 +37,10 @@ export abstract class Value<T> {
         return this.typeError('error');
     }
 
+    assertVector(): T {
+        return this.typeError('vector');
+    }
+
     assertSameAs(other: Value<any>): void {
         const thisType = this.constructor;
         const otherType = other.constructor;

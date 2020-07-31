@@ -1,11 +1,11 @@
 import {AnyValue, Value} from './values/value';
-import {BooleanValue, CallableValue, ErrorValue, NumberValue, ReferenceValue, StringValue} from './values/typed';
+import {BooleanValue, CallableValue, ErrorValue, NumberValue, ReferenceValue, StringValue, VectorValue} from './values/typed';
 import {BUILTINS} from './builtins';
 import {CALL_ASSERT_FALSE} from './passes/partialcallables';
 import {Callable} from './callables/callable';
 import {Environment} from './environment';
 import {ExpressionEvaluator} from './expressionevaluator';
-import {Expr, AssignExpr, BinaryExpr, CallExpr, FunctionExpr, GroupingExpr, LiteralExpr, LogicalExpr, ReferenceExpr, TernaryExpr, UnaryExpr, VariableExpr, ExprVisitor} from './parser/expr';
+import {Expr, AssignExpr, BinaryExpr, CallExpr, FunctionExpr, GroupingExpr, LiteralExpr, LogicalExpr, ReferenceExpr, TernaryExpr, UnaryExpr, VariableExpr, VectorExpr, ExprVisitor} from './parser/expr';
 import {FunctionCallable} from './callables/function';
 import {NativeCallable} from './callables/native';
 import {Parser} from './parser/parser';
@@ -313,6 +313,14 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
 
     visitVariableExpr(expr: VariableExpr): Value<any> {
         return this.environment().get(expr.name.lexeme);
+    }
+
+    visitVectorExpr(expr: VectorExpr): Value<any> {
+        const elements: Value<any>[] = [];
+        for (const el of expr.elements) {
+            elements.push(this.evaluate(el));
+        }
+        return new VectorValue(elements);
     }
 
     private evaluate(expr: Expr): Value<any> {
