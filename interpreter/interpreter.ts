@@ -34,6 +34,8 @@ export class InterpreterPragma {
     }
 }
 
+const NO_PATH: string = '<INLINE>';
+
 export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise<Value<any>>>, ExpressionEvaluator {
     private environments: Environment[] = [new Environment()];
     private importedLibraries: Set<string> = new Set();
@@ -50,17 +52,17 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
         return this.environments[this.environments.length - 1];
     }
 
-    async run(source: string): Promise<InterpreterResult> {
+    async run(source: string, path: string = NO_PATH): Promise<InterpreterResult> {
         const result = new InterpreterResult();
 
-        const scanner = new Scanner(source, this.scannerError.bind(this, result));
+        const scanner = new Scanner(source, this.scannerError.bind(this, result, path));
         const tokens = scanner.scanTokens();
 
         if (result.hasError) {
             return result;
         }
 
-        const parser = new Parser(tokens, this.parserError.bind(this, result));
+        const parser = new Parser(tokens, this.parserError.bind(this, result, path));
         const statements : Stmt[] = parser.parse();
 
         if (result.hasError) {
@@ -156,7 +158,7 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
 
         this.importedLibraries.add(path);
         const source = await fetch(path).then(response => response.text());
-        const result = await this.run(source);
+        const result = await this.run(source, path);
 
         return new AnyValue(result);
     }
@@ -322,14 +324,14 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
         return this.interpreterError(`Unimplemented operator ${typeStr}`);
     }
 
-    private scannerError(result: InterpreterResult, line: number, column: number, message: string) {
+    private scannerError(result: InterpreterResult, path: string, line: number, column: number, message: string) {
         result.hasError = true;
-        result.all.push(new ErrorValue(new Error(`Tokenizer error @ ${line}:${column}: ${message}`)));
+        result.all.push(new ErrorValue(new Error(`Tokenizer error @ ${path}:${line}:${column}: ${message}`)));
     }
 
-    private parserError(result: InterpreterResult, token: Token, message: string) {
+    private parserError(result: InterpreterResult, path: string, token: Token, message: string) {
         result.hasError = true;
-        result.all.push(new ErrorValue(new Error(`Parser error @ ${token.line}:${token.column}: ${message}`)));
+        result.all.push(new ErrorValue(new Error(`Parser error @ ${path}:${token.line}:${token.column}: ${message}`)));
     }
 
     private interpreterError(message: string): Error {
