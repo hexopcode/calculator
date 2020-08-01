@@ -54,7 +54,8 @@ export abstract class Value<T> {
     }
 
     equals(other: Value<T>): boolean {
-        return this.value() == other.value();
+        return this == other ||
+            this.value() == other.value();
     }
 
     toString(): string {
