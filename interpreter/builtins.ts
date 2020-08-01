@@ -1,6 +1,6 @@
 import {__builtin__, __raw_builtin__, __raw_builtin_env__} from './callables/native';
+import {BooleanValue, NumberValue, StringValue, VectorValue} from './values/typed';
 import {Environment} from './environment';
-import {NumberValue, StringValue, BooleanValue} from './values/typed';
 import {Value} from './values/value';
 
 export const BUILTINS = new Map([
@@ -54,4 +54,28 @@ export const BUILTINS = new Map([
 
     ['NUM', __raw_builtin__((arg: Value<any>): NumberValue => new NumberValue(Number(arg.value())))],
     ['STR', __raw_builtin__((arg: Value<any>): StringValue => new StringValue(arg.toString().toUpperCase()))],
+
+    ['VECEMPTY', __raw_builtin__((arg: Value<any>): BooleanValue => {
+        const vec = arg.assertVector();
+        return new BooleanValue(vec.length == 0);
+    })],
+    ['VECHEAD', __raw_builtin__((arg: Value<any>): Value<any> => {
+        const vec = arg.assertVector();
+        if (vec.length == 0) {
+            throw new Error('Empty vector');
+        }
+        return vec[0];
+    })],
+    ['VECTAIL', __raw_builtin__((arg: Value<any>): Value<any> => {
+        const vec = arg.assertVector();
+        if (vec.length == 0) {
+            throw new Error('Empty vector');
+        }
+        return new VectorValue(vec.slice(1));
+    })],
+    ['VECCONCAT', __raw_builtin__((arg1: Value<any>, arg2: Value<any>): Value<any> => {
+        const vec1 = arg1.assertVector();
+        const vec2 = arg2.assertVector();
+        return new VectorValue(vec1.concat(...vec2));
+    }, 2)],
 ]);
