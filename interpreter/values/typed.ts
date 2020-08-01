@@ -58,10 +58,6 @@ export class ReferenceValue extends Value<string> {
         return 'REF';
     }
 
-    equals(other: ReferenceValue): boolean {
-        return this == other;
-    }
-
     toString(): string {
         return `$${this.value()}`;
     }
