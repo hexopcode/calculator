@@ -219,10 +219,10 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
                 return new NumberValue(Math.pow(left.assertNumber(), right.assertNumber()));
             case TokenType.BANG_EQUAL:
                 left.assertSameAs(right);
-                return new BooleanValue(left.value() !== right.value());
+                return new BooleanValue(!left.equals(right));
             case TokenType.EQUAL_EQUAL:
                 left.assertSameAs(right);
-                return new BooleanValue(left.value() === right.value());
+                return new BooleanValue(left.equals(right));
             case TokenType.GREATER:
                 return new BooleanValue(left.assertNumber() > right.assertNumber());
             case TokenType.GREATER_EQUAL:

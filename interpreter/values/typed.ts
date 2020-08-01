@@ -58,6 +58,10 @@ export class ReferenceValue extends Value<string> {
         return 'REF';
     }
 
+    equals(other: ReferenceValue): boolean {
+        return this == other;
+    }
+
     toString(): string {
         return `$${this.value()}`;
     }
@@ -80,6 +84,21 @@ export class VectorValue extends Value<Array<Value<any>>> {
 
     type(): string {
         return 'VEC';
+    }
+
+    equals(other: VectorValue): boolean {
+        if (this === other) {
+            return true;
+        }
+        if (this.value().length !== this.value().length) {
+            return false;
+        }
+        for (let i = 0; i < this.value().length; ++i) {
+            if (!this.value()[i].equals(other.value()[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     toString(): string {

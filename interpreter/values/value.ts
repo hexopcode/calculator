@@ -53,6 +53,10 @@ export abstract class Value<T> {
         throw new Error(`${this.internal} is a ${typeof this.internal}, not a ${checkedType}`);
     }
 
+    equals(other: Value<T>): boolean {
+        return this.value() == other.value();
+    }
+
     toString(): string {
         return this.internal.toString();
     }
