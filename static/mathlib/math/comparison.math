@@ -1,6 +1,6 @@
 # MAX/MIN FUNCTIONS
-CONST FN MAX(X, Y) = X > Y ? X : Y
-CONST FN MIN(X, Y) = X < Y ? X : Y
+CONST MAX = FN(X, Y) X > Y ? X : Y
+CONST MIN = FN(X, Y) X < Y ? X : Y
 
 # UNIT TESTS FOR FUNCTIONS
 ASSERT(MAX(1, 2) == 2)

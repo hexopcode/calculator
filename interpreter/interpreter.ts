@@ -44,8 +44,9 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
         BUILTINS.forEach((callable, name) => this.environment().defineConstant(name, new CallableValue(callable)));
     }
 
-    async createEnvironment() {
+    async createEnvironment(): Promise<InterpreterResult> {
         return await this.run('IMPORT "MATHLIB/BOOTSTRAP.MATH"');
+        return new InterpreterResult();
     }
 
     environment(): Environment {
