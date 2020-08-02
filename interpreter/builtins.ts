@@ -43,6 +43,11 @@ export const BUILTINS = new Map([
         const ref: string = arg.assertReference();
         return new BooleanValue(env.isDefined(ref) && env.isConstant(ref));
     })],
+    ['ASSIGN', __raw_builtin_env__((env: Environment, arg1: Value<any>, arg2: Value<any>): Value<any> => {
+        const ref: string = arg1.assertReference();
+        env.define(ref, arg2);
+        return arg2;
+    }, 2)],
     ['RESOLVE', __raw_builtin_env__((env: Environment, arg: Value<any>): Value<any> => {
         const ref: string = arg.assertReference();
         return env.get(ref);
