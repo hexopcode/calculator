@@ -10,6 +10,7 @@ FREEZE($FAC)
 FIB = FN(X) 0, X == 0
 FIB = FN(X) 1, X < 3
 FIB = FN(X) FIB(X - 1) + FIB(X - 2)
+FREEZE($FIB)
 
 # UNIT TESTS
 ASSERT(HYPOT(3, 4) == 5)
