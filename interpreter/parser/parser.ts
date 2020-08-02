@@ -1,7 +1,7 @@
 import {ParserErrorReporter} from '../common/errorreporter';
 import {Expr, BinaryExpr, FunctionExpr, GroupingExpr, LiteralExpr, ReferenceExpr, TernaryExpr, UnaryExpr, VariableExpr, CallExpr, LogicalExpr, AssignExpr, VectorExpr} from './expr';
 import {Token, TokenType} from './token';
-import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, ImportStmt, PragmaStmt} from './stmt';
+import {Stmt, ConstStmt, ExpressionStmt, ImportStmt, PragmaStmt} from './stmt';
 
 export class Parser {
     private tokens: Token[];
@@ -37,9 +37,6 @@ export class Parser {
         }
         if (this.match(TokenType.CONST)) {
             return this.constantDeclaration();
-        }
-        if (this.check(TokenType.IDENTIFIER) && this.check(TokenType.EQUAL, 1)) {
-            return this.assignmentDeclaration();
         }
         return this.expressionStatement();
     }
@@ -86,14 +83,6 @@ export class Parser {
         const expr = this.expression();
 
         return new ConstStmt(name, expr);
-    }
-
-    private assignmentDeclaration(): Stmt {
-        const name = this.consume(TokenType.IDENTIFIER, 'Expect variable name');
-        this.consume(TokenType.EQUAL, 'Expect "=" after identifier');
-        const expr = this.expression();
-
-        return new AssignmentStmt(name, expr);
     }
 
     private expressionStatement(): Stmt {

@@ -10,7 +10,7 @@ import {FunctionCallable} from './callables/function';
 import {NativeCallable} from './callables/native';
 import {Parser} from './parser/parser';
 import {Scanner} from './parser/scanner';
-import {Stmt, AssignmentStmt, ConstStmt, ExpressionStmt, ImportStmt, PragmaStmt, StmtVisitor} from './parser/stmt';
+import {Stmt, ConstStmt, ExpressionStmt, ImportStmt, PragmaStmt, StmtVisitor} from './parser/stmt';
 import {Token, TokenType} from './parser/token';
 
 export type InterpreterResultType = (Stmt|Value<any>|ErrorValue);
@@ -117,33 +117,6 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
         return this.evaluate(stmt.expression);
     }
 
-    async visitAssignmentStmt(stmt: AssignmentStmt): Promise<Value<any>> {
-        let value = this.evaluate(stmt.expression);
-
-        if (this.environment().isDefined(stmt.name.lexeme)) {
-            if (!this.environment().isConstant(stmt.name.lexeme)) {
-                const parent = this.environment().get(stmt.name.lexeme);
-
-                if (parent instanceof CallableValue && value instanceof CallableValue) {
-                    const parentCallable = parent.assertCallable();
-                    const callable = value.assertCallable();
-
-                    if (parentCallable instanceof NativeCallable) {
-                        throw this.interpreterError('Cannot add partial function to native functions');
-                    }
-
-                    if (callable instanceof FunctionCallable) {
-                        (parentCallable as FunctionCallable).concat(callable);
-                        value = new CallableValue(parentCallable);
-                    }
-                }
-            }
-        }
-
-        this.environment().define(stmt.name.lexeme, value);
-        return value;
-    }
-
     async visitConstStmt(stmt: ConstStmt): Promise<Value<any>> {
         const value = this.evaluate(stmt.expression);
         this.environment().defineConstant(stmt.name.lexeme, value);
@@ -193,7 +166,28 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
     }
 
     visitAssignExpr(expr: AssignExpr): Value<any> {
-        const value = this.evaluate(expr.value);
+        let value = this.evaluate(expr.value);
+
+        if (this.environment().isDefined(expr.name.lexeme)) {
+            if (!this.environment().isConstant(expr.name.lexeme)) {
+                const parent = this.environment().get(expr.name.lexeme);
+
+                if (parent instanceof CallableValue && value instanceof CallableValue) {
+                    const parentCallable = parent.assertCallable();
+                    const callable = value.assertCallable();
+
+                    if (parentCallable instanceof NativeCallable) {
+                        throw this.interpreterError('Cannot add partial function to native functions');
+                    }
+
+                    if (callable instanceof FunctionCallable) {
+                        (parentCallable as FunctionCallable).concat(callable);
+                        value = new CallableValue(parentCallable);
+                    }
+                }
+            }
+        }
+
         this.environment().define(expr.name.lexeme, value);
         return value;
     }
