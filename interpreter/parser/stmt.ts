@@ -17,20 +17,6 @@ export class ExpressionStmt implements Stmt {
     }
 }
 
-export class ConstStmt implements Stmt {
-    readonly name: Token;
-    readonly expression: Expr;
-
-    constructor(name: Token, expression: Expr) {
-        this.name = name;
-        this.expression = expression;
-    }
-
-    accept<T>(visitor: StmtVisitor<T>): T {
-        return visitor.visitConstStmt(this);
-    }
-}
-
 export class ImportStmt implements Stmt {
     readonly path: Token;
 
@@ -59,7 +45,6 @@ export class PragmaStmt implements Stmt {
 
 export interface StmtVisitor<T> {
     visitExpressionStmt(stmt: ExpressionStmt): T;
-    visitConstStmt(stmt: ConstStmt): T;
     visitImportStmt(stmt: ImportStmt): T;
     visitPragmaStmt(stmt: PragmaStmt): T;
 }

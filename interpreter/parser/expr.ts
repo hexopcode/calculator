@@ -7,10 +7,12 @@ export interface Expr {
 export class AssignExpr implements Expr {
     readonly name: Token;
     readonly value: Expr;
+    readonly isConst: boolean;
 
-    constructor(name: Token, value: Expr) {
+    constructor(name: Token, value: Expr, isConst: boolean) {
         this.name = name;
         this.value = value;
+        this.isConst = isConst;
     }
 
     accept<T>(visitor: ExprVisitor<T>): T {

@@ -10,7 +10,7 @@ import {FunctionCallable} from './callables/function';
 import {NativeCallable} from './callables/native';
 import {Parser} from './parser/parser';
 import {Scanner} from './parser/scanner';
-import {Stmt, ConstStmt, ExpressionStmt, ImportStmt, PragmaStmt, StmtVisitor} from './parser/stmt';
+import {Stmt, ExpressionStmt, ImportStmt, PragmaStmt, StmtVisitor} from './parser/stmt';
 import {Token, TokenType} from './parser/token';
 
 export type InterpreterResultType = (Stmt|Value<any>|ErrorValue);
@@ -117,12 +117,6 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
         return this.evaluate(stmt.expression);
     }
 
-    async visitConstStmt(stmt: ConstStmt): Promise<Value<any>> {
-        const value = this.evaluate(stmt.expression);
-        this.environment().defineConstant(stmt.name.lexeme, value);
-        return value;
-    }
-
     async visitImportStmt(stmt: ImportStmt): Promise<Value<any>> {
         const path = stmt.path.literal;
         if (this.importedLibraries.has(path)) {
@@ -188,7 +182,11 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
             }
         }
 
-        this.environment().define(expr.name.lexeme, value);
+        if (expr.isConst) {
+            this.environment().defineConstant(expr.name.lexeme, value);
+        } else {
+            this.environment().define(expr.name.lexeme, value);
+        }
         return value;
     }
 

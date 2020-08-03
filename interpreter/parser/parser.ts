@@ -1,7 +1,7 @@
 import {ParserErrorReporter} from '../common/errorreporter';
 import {Expr, BinaryExpr, FunctionExpr, GroupingExpr, LiteralExpr, ReferenceExpr, TernaryExpr, UnaryExpr, VariableExpr, CallExpr, LogicalExpr, AssignExpr, VectorExpr} from './expr';
 import {Token, TokenType} from './token';
-import {Stmt, ConstStmt, ExpressionStmt, ImportStmt, PragmaStmt} from './stmt';
+import {Stmt, ExpressionStmt, ImportStmt, PragmaStmt} from './stmt';
 
 export class Parser {
     private tokens: Token[];
@@ -34,9 +34,6 @@ export class Parser {
         }
         if (this.match(TokenType.POUND)) {
             return this.pragmaDeclaration();
-        }
-        if (this.match(TokenType.CONST)) {
-            return this.constantDeclaration();
         }
         return this.expressionStatement();
     }
@@ -77,14 +74,6 @@ export class Parser {
         return new PragmaStmt(name, attributes);
     }
 
-    private constantDeclaration(): Stmt {
-        const name = this.consume(TokenType.IDENTIFIER, 'Expect constant name');
-        this.consume(TokenType.EQUAL, 'Expect "=" after identifier');
-        const expr = this.expression();
-
-        return new ConstStmt(name, expr);
-    }
-
     private expressionStatement(): Stmt {
         return new ExpressionStmt(this.expression());
     }
@@ -94,6 +83,7 @@ export class Parser {
     }
 
     private assignment(): Expr {
+        const isConst = this.match(TokenType.CONST);
         const expr = this.ternary();
 
         if (this.match(TokenType.EQUAL)) {
@@ -101,7 +91,7 @@ export class Parser {
             const value = this.assignment();
 
             if (expr instanceof VariableExpr) {
-                return new AssignExpr(expr.name, value);
+                return new AssignExpr(expr.name, value, isConst);
             }
             throw this.error(equals, 'Invalid assignment target');
         }
