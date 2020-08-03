@@ -25,11 +25,13 @@ export class Calc extends React.Component {
     }
 
     handlePragma(pragma: InterpreterPragma) {
-        if (pragma.name !== 'OUTPUT') {
-            return;
+        if (pragma.name === 'OUTPUT') {
+            this.handlePragmaOutput(pragma.attributes);
         }
+    }
 
-        pragma.attributes.forEach((value: (boolean|string|number), key: string) => {
+    handlePragmaOutput(attributes: InterpreterPragmaAttributes) {
+        attributes.forEach((value: (boolean|string|number), key: string) => {
             switch (key) {
                 case 'AST':
                     this.shouldRenderAst = value as boolean;
