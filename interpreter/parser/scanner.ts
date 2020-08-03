@@ -47,6 +47,8 @@ export class Scanner {
                     while (!this.match('\n') && !this.isAtEnd()) {
                         this.advance();
                     }
+                    this.column = 0;
+                    this.line++;
                 }
                 break;
             case ':':
