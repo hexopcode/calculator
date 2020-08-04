@@ -142,23 +142,28 @@ export class Parser {
         }
         this.consume(TokenType.LEFT_PAREN, 'Expect "(" after FN');
 
+        const destructured = this.match(TokenType.LEFT_SQUARE_BRACKET);
         const args: Token[] = [];
 
         while (this.peek().type == TokenType.IDENTIFIER) {
             args.push(this.advance());
-            if (this.peek().type != TokenType.RIGHT_PAREN) {
+            if (this.peek().type !== TokenType.RIGHT_SQUARE_BRACKET &&
+                this.peek().type !== TokenType.RIGHT_PAREN) {
                 this.consume(TokenType.COMMA, 'Expect "," after identifier');
                 this.peekAssert(TokenType.IDENTIFIER, 'Expect identifier after ","');
             }
+        }
+        if (destructured) {
+            this.consume(TokenType.RIGHT_SQUARE_BRACKET, 'Expect "]" after arguments');
         }
         this.consume(TokenType.RIGHT_PAREN, 'Expect ")" after function arguments');
 
         const expr = this.expression();
         if (this.match(TokenType.COMMA)) {
-            return new FunctionExpr(args, expr, this.or());
+            return new FunctionExpr(args, expr, destructured, this.or());
         }
 
-        return new FunctionExpr(args, expr);
+        return new FunctionExpr(args, expr, destructured);
     }
 
     private equality(): Expr {

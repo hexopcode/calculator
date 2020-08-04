@@ -8,24 +8,27 @@ import {Value} from '../values/value';
 
 export class FunctionCallable extends Callable {
     private readonly args: Token[];
+    private readonly destructured: boolean;
     private readonly body: TernaryExpr;
 
-    constructor(args: Token[], body: TernaryExpr) {
+    constructor(args: Token[], destructured: boolean, body: TernaryExpr) {
         super();
         this.args = args;
+        this.destructured = destructured;
         this.body = body;
     }
 
     call(argsValues: Value<any>[], evaluator: ExpressionEvaluator): Value<any> {
         const env: Environment = new Environment(evaluator.environment());
-        argsValues.forEach((value: Value<any>, index: number) => {
+        const values = this.destructured ? (argsValues[0].value() as Array<Value<any>>) : argsValues;
+        values.forEach((value: Value<any>, index: number) => {
             env.define(this.args[index].lexeme, value);
         });
         return evaluator.evaluateWithEnvironment(this.body, env);
     }
 
     arity(): CallableArity {
-        return [this.args.length, this.args.length];
+        return this.destructured ? [1, 1] : [this.args.length, this.args.length];
     }
 
     toString(): string {

@@ -251,7 +251,7 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
             expr.cond ? expr.cond : new LiteralExpr(true),
             expr.body,
             CALL_ASSERT_FALSE);
-        return new CallableValue(new FunctionCallable(expr.args, ternary));
+        return new CallableValue(new FunctionCallable(expr.args, expr.destructured, ternary));
     }
 
     visitGroupingExpr(expr: GroupingExpr): Value<any> {

@@ -42,9 +42,10 @@ export class AstPrinter implements ExprVisitor<string>, StmtVisitor<string> {
 
     visitFunctionExpr(expr: FunctionExpr): string {
         const args = expr.args.map(arg => arg.lexeme).join(' ');
+        const wrapped = expr.destructured ? `[${args}]` : `${args}`;
         return expr.cond ?
-            this.parenthesize(`fn (${args})`, expr.body, expr.cond) :
-            this.parenthesize(`fn (${args})`, expr.body);
+            this.parenthesize(`fn (${wrapped})`, expr.body, expr.cond) :
+            this.parenthesize(`fn (${wrapped})`, expr.body);
     }
 
     visitGroupingExpr(expr: GroupingExpr): string {

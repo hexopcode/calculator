@@ -69,11 +69,13 @@ export class CallExpr implements Expr {
 export class FunctionExpr implements Expr {
     readonly args: Token[];
     readonly body: Expr;
+    readonly destructured: boolean;
     readonly cond?: Expr;
 
-    constructor(args: Token[], body: Expr, cond?: Expr) {
+    constructor(args: Token[], body: Expr, destructured: boolean, cond?: Expr) {
         this.args = args;
         this.body = body;
+        this.destructured = destructured;
         this.cond = cond;
     }
 
