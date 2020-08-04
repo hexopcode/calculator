@@ -169,8 +169,22 @@ export class VectorExpr implements Expr {
         this.elements = elements;
     }
 
-    accept<T>(visitor: ExprVisitor<T>): T{
+    accept<T>(visitor: ExprVisitor<T>): T {
         return visitor.visitVectorExpr(this);
+    }
+}
+
+export class WithExpr implements Expr {
+    readonly locals: AssignExpr[];
+    readonly expr: Expr;
+
+    constructor(locals: AssignExpr[], expr: Expr) {
+        this.locals = locals;
+        this.expr = expr;
+    }
+
+    accept<T>(visitor: ExprVisitor<T>): T {
+        return visitor.visitWithExpr(this);
     }
 }
 
@@ -187,4 +201,5 @@ export interface ExprVisitor<T> {
     visitUnaryExpr(expr: UnaryExpr): T;
     visitVariableExpr(expr: VariableExpr): T;
     visitVectorExpr(expr: VectorExpr): T;
+    visitWithExpr(expr: WithExpr): T;
 }

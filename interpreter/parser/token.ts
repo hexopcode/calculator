@@ -43,6 +43,7 @@ export enum TokenType {
     FALSE,
     IMPORT,
     TRUE,
+    WITH,
 
     EOF,
 }

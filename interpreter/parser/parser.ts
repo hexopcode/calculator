@@ -1,5 +1,5 @@
 import {ParserErrorReporter} from '../common/errorreporter';
-import {Expr, BinaryExpr, FunctionExpr, GroupingExpr, LiteralExpr, ReferenceExpr, TernaryExpr, UnaryExpr, VariableExpr, CallExpr, LogicalExpr, AssignExpr, VectorExpr} from './expr';
+import {Expr, BinaryExpr, FunctionExpr, GroupingExpr, LiteralExpr, ReferenceExpr, TernaryExpr, UnaryExpr, VariableExpr, CallExpr, LogicalExpr, AssignExpr, WithExpr, VectorExpr} from './expr';
 import {Token, TokenType} from './token';
 import {Stmt, ExpressionStmt, ImportStmt, PragmaStmt} from './stmt';
 
@@ -79,7 +79,34 @@ export class Parser {
     }
 
     private expression(): Expr {
-        return this.assignment();
+        return this.with();
+    }
+
+    private with(): Expr {
+        const maybeWith = this.peek();
+        if (!this.match(TokenType.WITH)) {
+            return this.assignment();
+        }
+        
+        const locals: AssignExpr[] = [];
+        const first = this.assignment();
+        if (first instanceof AssignExpr) {
+            locals.push(first);
+        } else {
+            throw this.error(maybeWith, 'Expected assignment');
+        }
+
+        while (this.match(TokenType.COMMA)) {
+            const next = this.assignment();
+            if (next instanceof AssignExpr) {
+                locals.push(next);
+            } else {
+                throw this.error(maybeWith, 'Expected assignment');
+            }
+        }
+        const expr = this.expression();
+
+        return new WithExpr(locals, expr);
     }
 
     private assignment(): Expr {

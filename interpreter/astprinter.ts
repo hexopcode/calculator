@@ -1,4 +1,4 @@
-import {Expr, AssignExpr, BinaryExpr, CallExpr, TernaryExpr, FunctionExpr, GroupingExpr, LiteralExpr, LogicalExpr, ReferenceExpr, UnaryExpr, VariableExpr, VectorExpr, ExprVisitor} from './parser/expr';
+import {Expr, AssignExpr, BinaryExpr, CallExpr, TernaryExpr, FunctionExpr, GroupingExpr, LiteralExpr, LogicalExpr, ReferenceExpr, UnaryExpr, VariableExpr, WithExpr, VectorExpr, ExprVisitor} from './parser/expr';
 import {Stmt, ExpressionStmt, ImportStmt, PragmaStmt, StmtVisitor} from './parser/stmt';
 import {TokenType} from './parser/token';
 
@@ -79,6 +79,10 @@ export class AstPrinter implements ExprVisitor<string>, StmtVisitor<string> {
 
     visitVectorExpr(expr: VectorExpr): string {
         return this.parenthesize('vec', ...expr.elements);
+    }
+
+    visitWithExpr(expr: WithExpr): string {
+        return this.parenthesize('with', ...expr.locals, expr.expr);
     }
 
     private parenthesize(name: string, ...expressions: Expr[]): string {

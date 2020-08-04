@@ -7,6 +7,7 @@ const KEYWORDS: Map<string, TokenType> = new Map([
     ['FALSE', TokenType.FALSE],
     ['IMPORT', TokenType.IMPORT],
     ['TRUE', TokenType.TRUE],
+    ['WITH', TokenType.WITH],
 ]);
 
 export class Scanner {

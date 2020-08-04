@@ -5,7 +5,7 @@ import {CALL_ASSERT_FALSE} from './passes/partialcallables';
 import {Callable} from './callables/callable';
 import {Environment} from './environment';
 import {ExpressionEvaluator} from './expressionevaluator';
-import {Expr, AssignExpr, BinaryExpr, CallExpr, FunctionExpr, GroupingExpr, LiteralExpr, LogicalExpr, ReferenceExpr, TernaryExpr, UnaryExpr, VariableExpr, VectorExpr, ExprVisitor} from './parser/expr';
+import {Expr, AssignExpr, BinaryExpr, CallExpr, FunctionExpr, GroupingExpr, LiteralExpr, LogicalExpr, ReferenceExpr, TernaryExpr, UnaryExpr, VariableExpr, VectorExpr, WithExpr, ExprVisitor} from './parser/expr';
 import {FunctionCallable} from './callables/function';
 import {NativeCallable} from './callables/native';
 import {Parser} from './parser/parser';
@@ -313,6 +313,14 @@ export class Interpreter implements ExprVisitor<Value<any>>, StmtVisitor<Promise
             elements.push(this.evaluate(el));
         }
         return new VectorValue(elements);
+    }
+
+    visitWithExpr(expr: WithExpr): Value<any> {
+        const env: Environment = new Environment(this.environment());
+        for (const local of expr.locals) {
+            env.define(local.name.lexeme, this.evaluate(local.value));
+        }
+        return this.evaluateWithEnvironment(expr.expr, env);
     }
 
     private evaluate(expr: Expr): Value<any> {
