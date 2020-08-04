@@ -20,7 +20,7 @@ export class FunctionCallable extends Callable {
 
     call(argsValues: Value<any>[], evaluator: ExpressionEvaluator): Value<any> {
         const env: Environment = new Environment(evaluator.environment());
-        const values = this.destructured ? (argsValues[0].value() as Array<Value<any>>) : argsValues;
+        const values = this.destructured ? argsValues[0].assertVector() : argsValues;
         values.forEach((value: Value<any>, index: number) => {
             env.define(this.args[index].lexeme, value);
         });
